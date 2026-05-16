@@ -5,6 +5,7 @@ from fastapi import Depends, FastAPI, HTTPException, Query, status
 from app.ai import ProfileExtractor
 from app.auth import require_admin
 from app.config import Settings, get_settings
+from app.extraction import GeminiExtractionClient, GeminiExtractionError
 from app.models import (
     AuthContext,
     FeedbackRequest,
@@ -20,6 +21,7 @@ from app.models import (
 )
 from app.repositories import FirestoreRepository, InMemoryRepository, Repository
 from app.routes.profile_extraction import router as profile_extraction_router
+from app.reports import GeminiReportService
 from app.services import MatchingService, mark_recommendation_decision
 
 
@@ -55,6 +57,31 @@ def create_app(repository: Repository | None = None, settings: Settings | None =
     @api.get("/health")
     async def health() -> dict[str, str]:
         return {"status": "ok", "service": "matching-engine"}
+
+    @api.get("/ai/status")
+    async def ai_status(
+        auth_context: AuthContext = Depends(require_admin),
+    ) -> dict[str, object]:
+        del auth_context
+        has_credentials = bool(resolved_settings.gemini_api_key or resolved_settings.google_cloud_project)
+        status_payload: dict[str, object] = {
+            "provider": resolved_settings.ai_provider,
+            "model": resolved_settings.gemini_model,
+            "configured": resolved_settings.ai_provider == "gemini" and has_credentials,
+            "ok": False,
+        }
+        if resolved_settings.ai_provider != "gemini":
+            return {**status_payload, "detail": "AI_PROVIDER is not set to gemini."}
+        if not has_credentials:
+            return {**status_payload, "detail": "Set GEMINI_API_KEY or GOOGLE_CLOUD_PROJECT."}
+
+        try:
+            await GeminiExtractionClient(resolved_settings).generate_json(
+                "Return the smallest valid JSON object with one boolean field named ok."
+            )
+        except GeminiExtractionError as exc:
+            return {**status_payload, "detail": str(exc)}
+        return {**status_payload, "ok": True, "detail": "Gemini request succeeded."}
 
     @api.post("/profiles/extract", response_model=NormalizedProfile, status_code=status.HTTP_201_CREATED)
     async def extract_profile(
@@ -146,6 +173,14 @@ def create_app(repository: Repository | None = None, settings: Settings | None =
     ) -> list[Relationship]:
         del auth_context
         return await api.state.repository.list_relationships(status_filter)
+
+    @api.get("/reports/matching")
+    async def matching_report(
+        auth_context: AuthContext = Depends(require_admin),
+    ) -> dict[str, str]:
+        del auth_context
+        report = await GeminiReportService(api.state.repository, api.state.settings).generate_matching_report()
+        return {"report": report}
 
     @api.post("/relationships/{relationship_id}/feedback", response_model=Relationship)
     async def add_feedback(

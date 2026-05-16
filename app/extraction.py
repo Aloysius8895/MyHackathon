@@ -116,22 +116,28 @@ class GeminiExtractionClient:
         except ImportError as exc:
             raise GeminiExtractionError("google-genai is not installed") from exc
 
-        if not self.settings.google_cloud_project:
-            raise GeminiExtractionError("GOOGLE_CLOUD_PROJECT is required for Gemini extraction")
+        if self.settings.gemini_api_key:
+            client = genai.Client(api_key=self.settings.gemini_api_key)
+        elif self.settings.google_cloud_project:
+            client = genai.Client(
+                vertexai=True,
+                project=self.settings.google_cloud_project,
+                location=self.settings.google_cloud_location,
+            )
+        else:
+            raise GeminiExtractionError("No Gemini credentials: set GEMINI_API_KEY or GOOGLE_CLOUD_PROJECT")
 
-        client = genai.Client(
-            vertexai=True,
-            project=self.settings.google_cloud_project,
-            location=self.settings.google_cloud_location,
-        )
-        response = client.models.generate_content(
-            model=self.settings.gemini_model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                temperature=self.settings.gemini_temperature,
-            ),
-        )
+        try:
+            response = client.models.generate_content(
+                model=self.settings.gemini_model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=self.settings.gemini_temperature,
+                ),
+            )
+        except Exception as exc:
+            raise GeminiExtractionError(f"Gemini request failed: {exc}") from exc
         if not response.text:
             raise GeminiExtractionError("Gemini returned an empty response")
         return response.text
@@ -201,11 +207,14 @@ class LlmProfileExtractionService:
         return self._to_response(document, latest_log.log_id if latest_log else "")
 
     async def _extract(self, actor_type: ExtractionActorType, raw_profile_text: str, output_model: type[TExtract]) -> TExtract:
+        has_credentials = bool(self.settings.gemini_api_key or self.settings.google_cloud_project)
         if self.settings.ai_provider == "gemini":
+            if not has_credentials:
+                raise GeminiExtractionError("No Gemini credentials: set GEMINI_API_KEY or GOOGLE_CLOUD_PROJECT")
             schema = output_model.model_json_schema(by_alias=True)
             prompt = build_grounded_extraction_prompt(actor_type, schema, raw_profile_text)
-            raw_response = await self.gemini_client.generate_json(prompt)
             try:
+                raw_response = await self.gemini_client.generate_json(prompt)
                 payload = parse_json_object(raw_response)
                 return output_model.model_validate(payload)
             except (json.JSONDecodeError, ValidationError) as exc:

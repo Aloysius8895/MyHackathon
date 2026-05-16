@@ -23,6 +23,7 @@ class Repository(Protocol):
     async def save_profile(self, profile: NormalizedProfile) -> NormalizedProfile: ...
     async def get_profile(self, profile_id: str) -> NormalizedProfile | None: ...
     async def list_mentors(self) -> list[NormalizedProfile]: ...
+    async def list_companies(self) -> list[NormalizedProfile]: ...
     async def save_extracted_actor(self, document: ExtractedProfileDocument, normalized_profile: NormalizedProfile) -> ExtractedProfileDocument: ...
     async def get_extracted_actor(self, actor_type: ExtractionActorType, actor_id: str) -> ExtractedProfileDocument | None: ...
     async def write_extraction_log(self, log: ExtractionLog) -> ExtractionLog: ...
@@ -62,6 +63,13 @@ class InMemoryRepository:
             profile.model_copy(deep=True)
             for profile in self.profiles.values()
             if profile.profile_type == ProfileType.mentor
+        ]
+
+    async def list_companies(self) -> list[NormalizedProfile]:
+        return [
+            profile.model_copy(deep=True)
+            for profile in self.profiles.values()
+            if profile.profile_type == ProfileType.company
         ]
 
     async def save_extracted_actor(self, document: ExtractedProfileDocument, normalized_profile: NormalizedProfile) -> ExtractedProfileDocument:
@@ -240,6 +248,11 @@ class FirestoreRepository:
 
     async def list_mentors(self) -> list[NormalizedProfile]:
         query = self.client.collection("profiles").where("profile_type", "==", ProfileType.mentor.value)
+        snapshots = await asyncio.to_thread(lambda: list(query.stream()))
+        return [NormalizedProfile(**snapshot.to_dict()) for snapshot in snapshots]
+
+    async def list_companies(self) -> list[NormalizedProfile]:
+        query = self.client.collection("profiles").where("profile_type", "==", ProfileType.company.value)
         snapshots = await asyncio.to_thread(lambda: list(query.stream()))
         return [NormalizedProfile(**snapshot.to_dict()) for snapshot in snapshots]
 

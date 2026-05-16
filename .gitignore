@@ -13,3 +13,7 @@ dist/
 build/
 *.egg-info/
 .DS_Store
+.api-*.log
+.server-*.log
+node_modules/
+.astro/

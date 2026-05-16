@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     storage_backend: Literal["memory", "firestore"] = "memory"
     auth_mode: Literal["disabled", "firebase"] = "disabled"
     ai_provider: Literal["heuristic", "gemini"] = "heuristic"
+    gemini_api_key: str | None = None
     firebase_project_id: str | None = None
     google_cloud_project: str | None = None
     google_cloud_location: str = "us-central1"
