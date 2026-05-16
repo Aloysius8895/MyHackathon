@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 from database import init_db, add_actor, get_actors, get_actor, create_linkage, get_linkages, update_linkage_status, add_engagement, get_engagements, get_stats
 from gemini_engine import find_matches, explain_linkage, suggest_programme_matches, predict_linkage_success, analyze_ecosystem_health
+from matching_engine import filter_eligible_candidates, compute_match_score, graph_relationship_boost, greedy_assign
 from skills_pack import get_skills_by_category, get_all_skills
 
 st.set_page_config(page_title="EcoLink", page_icon="🔗", layout="wide")
@@ -180,11 +181,18 @@ elif page == "Actors":
 # PAGE: AI MATCHING
 # ============================================================
 elif page == "AI Matching":
-    st.title("AI Matching Engine")
-    st.caption("Powered by Google Gemini 2.0 Flash — finds the best ecosystem relationships")
+    st.title("Hybrid AI Matching Engine")
+    st.caption("Formula scoring + graph history + Gemini explanation — transparent and auditable")
     st.divider()
 
-    st.info("**How it works:** Select a target actor, choose a candidate pool, and Gemini AI will rank the best matches with explanations and confidence scores.")
+    st.info(
+        "**Pipeline:** "
+        "① Hard eligibility rules filter ineligible candidates → "
+        "② Weighted formula scores each dimension → "
+        "③ Graph history boosts proven mentors → "
+        "④ Gemini explains top matches and flags risks → "
+        "⑤ Admin approves before any linkage is created."
+    )
 
     actors = get_actors()
     if len(actors) < 2:
@@ -202,79 +210,144 @@ elif page == "AI Matching":
     target_actor = get_actor(target_id)
     candidates = [a for a in actors if a["id"] != target_id]
 
-    # Filter candidates to opposite type for smarter matching
     if target_actor["type"] == "company":
         smart_candidates = [a for a in candidates if a["type"] == "mentor"]
-        st.caption(f"Matching against {len(smart_candidates)} mentors (smart filter applied)")
+        st.caption(f"Smart filter: {len(smart_candidates)} mentors in pool")
     elif target_actor["type"] == "mentor":
         smart_candidates = [a for a in candidates if a["type"] == "company"]
-        st.caption(f"Matching against {len(smart_candidates)} companies (smart filter applied)")
+        st.caption(f"Smart filter: {len(smart_candidates)} companies in pool")
     else:
         smart_candidates = candidates
-        st.caption(f"Matching against {len(smart_candidates)} actors")
+        st.caption(f"{len(smart_candidates)} actors in pool")
 
     if not smart_candidates:
         st.warning("No suitable candidates found. Add more actors of complementary types.")
         st.stop()
 
-    if st.button("Find Best Matches with AI", type="primary", use_container_width=True):
-        with st.spinner("Gemini is analyzing ecosystem relationships..."):
-            results = find_matches(target_actor, smart_candidates, programme, top_n=5)
+    if st.button("Find Best Matches", type="primary", use_container_width=True):
+        all_linkages = get_linkages()
+        all_engagements = get_engagements()
+        all_actors_list = get_actors()
 
-        if results and "error" not in results[0]:
-            st.success(f"Found {len(results)} matches for **{target_actor['name']}**")
-            st.divider()
+        with st.spinner("Step 2: Applying eligibility rules..."):
+            eligible = filter_eligible_candidates(target_actor, smart_candidates, all_linkages)
 
-            for i, match in enumerate(results):
-                score = match.get("score", 0)
-                confidence = match.get("confidence", "medium")
-                bias_flag = match.get("bias_flag", False)
+        if not eligible:
+            st.warning("All candidates are already linked to this actor or at full capacity.")
+            st.stop()
 
-                score_color = "green" if score >= 0.7 else "orange" if score >= 0.4 else "red"
-                conf_emoji = "🟢" if confidence == "high" else "🟡" if confidence == "medium" else "🔴"
+        with st.spinner(f"Steps 4–5: Scoring {len(eligible)} eligible candidates..."):
+            scored = []
+            for c in eligible:
+                score_data = compute_match_score(target_actor, c, all_linkages, all_engagements, programme)
+                boost = graph_relationship_boost(target_actor, c, all_actors_list, all_linkages, all_engagements)
+                score_data["final_score"] = round(min(1.0, score_data["final_score"] + boost), 4)
+                score_data["graph_boost"] = round(boost, 4)
+                scored.append(score_data)
 
-                with st.container(border=True):
-                    col1, col2, col3 = st.columns([3, 1, 1])
-                    with col1:
-                        st.subheader(f"#{i+1} {match.get('name', 'Unknown')}")
-                    with col2:
-                        st.metric("Match Score", f"{score:.0%}")
-                    with col3:
-                        st.write(f"**Confidence:** {conf_emoji} {confidence.capitalize()}")
+        assigned = greedy_assign(scored, all_linkages)[:5]
+        score_breakdowns = {s["actor_id"]: s for s in assigned}
+        assigned_actors = [next(a for a in eligible if a["id"] == s["actor_id"]) for s in assigned]
 
-                    st.write(f"**Why this match:** {match.get('reason', 'N/A')}")
+        with st.spinner("Step 7: Gemini is explaining the top matches..."):
+            results = find_matches(target_actor, assigned_actors, programme, top_n=5,
+                                   score_breakdowns=score_breakdowns)
 
-                    if bias_flag:
-                        st.warning("Bias Flag: This actor appears frequently in top matches. Consider diversifying.")
+        st.session_state["match_results"] = results
+        st.session_state["match_target_id"] = target_id
+        st.session_state["match_programme"] = programme
+        st.session_state["score_breakdowns"] = score_breakdowns
+        st.session_state["match_eligible"] = eligible
 
-                    # Success prediction + Create Linkage
-                    candidate_actor = next((a for a in smart_candidates if a["id"] == match.get("actor_id")), None)
-                    if candidate_actor:
-                        pred_col, btn_col = st.columns([3, 1])
-                        with pred_col:
-                            if st.button(f"Predict Success", key=f"predict_{i}", type="secondary"):
-                                with st.spinner("Analyzing historical patterns..."):
-                                    all_eng = get_engagements()
-                                    prediction = predict_linkage_success(target_actor, candidate_actor, all_eng)
-                                if "error" not in prediction:
-                                    prob = prediction.get("probability", 0)
-                                    st.write(f"**Success Probability:** {prob:.0%} ({prediction.get('confidence','').capitalize()} confidence)")
-                                    st.caption(prediction.get("summary", ""))
-                                    if prediction.get("risk_factors"):
-                                        st.write("**Risks:** " + " | ".join(prediction["risk_factors"]))
-                                    if prediction.get("recommendations"):
-                                        st.write("**Actions:** " + " | ".join(prediction["recommendations"]))
-                        with btn_col:
-                            if st.button(f"Create Linkage", key=f"link_{i}", type="primary"):
-                                linkage_type = f"{target_actor['type']}-{candidate_actor['type']}"
-                                create_linkage(
-                                    target_actor["id"], candidate_actor["id"],
-                                    linkage_type, score, match.get("reason", ""), programme
-                                )
-                                st.success(f"Linkage created between {target_actor['name']} and {match.get('name')}!")
-        else:
-            error = results[0].get("error", "Unknown error") if results else "No results"
-            st.error(f"Matching failed: {error}")
+    # Retrieve persisted results (survive Create Linkage button reruns)
+    results = st.session_state.get("match_results", [])
+    score_breakdowns = st.session_state.get("score_breakdowns", {})
+    eligible_cached = st.session_state.get("match_eligible", smart_candidates)
+
+    # Clear results if user changed the target actor
+    if st.session_state.get("match_target_id") != target_id:
+        results = []
+
+    if results and "error" not in (results[0] if results else {}):
+        st.success(f"Found {len(results)} matches for **{target_actor['name']}**")
+        st.divider()
+
+        for i, match in enumerate(results):
+            score = match.get("score", 0)
+            confidence = match.get("confidence", "medium")
+            bias_flag = match.get("bias_flag", False)
+            risk_note = match.get("risk_note", "")
+            conf_emoji = "🟢" if confidence == "high" else "🟡" if confidence == "medium" else "🔴"
+
+            with st.container(border=True):
+                col1, col2, col3 = st.columns([3, 1, 1])
+                with col1:
+                    st.subheader(f"#{i+1} {match.get('name', 'Unknown')}")
+                with col2:
+                    st.metric("Match Score", f"{score:.0%}")
+                with col3:
+                    st.write(f"**Confidence:** {conf_emoji} {confidence.capitalize()}")
+
+                st.write(f"**Why this match:** {match.get('reason', 'N/A')}")
+
+                if risk_note:
+                    st.warning(f"**Risk:** {risk_note}")
+                if bias_flag:
+                    st.warning("**Bias Flag:** This actor appears frequently in top matches. Consider diversifying.")
+
+                # Score breakdown
+                bd_data = score_breakdowns.get(match.get("actor_id"), {})
+                if bd_data:
+                    with st.expander("Score Breakdown (Formula)"):
+                        bd = bd_data.get("breakdown", {})
+                        labels = [
+                            ("Industry Match",        "20%", "industry"),
+                            ("Needs / Expertise",     "25%", "needs_expertise"),
+                            ("Stage / Context",       "15%", "stage_context"),
+                            ("Semantic Similarity",   "15%", "semantic_similarity"),
+                            ("Availability",          "10%", "availability"),
+                            ("Historical Feedback",   "10%", "historical_feedback"),
+                            ("Programme / Geography",  "5%", "programme_geography"),
+                        ]
+                        for label, weight, key in labels:
+                            val = bd.get(key, 0)
+                            bar = "█" * int(val * 20) + "░" * (20 - int(val * 20))
+                            st.write(f"`{bar}` **{label}** ({weight}): {val:.0%}")
+                        graph_boost = bd_data.get("graph_boost", 0)
+                        if graph_boost > 0:
+                            st.write(f"**Graph Relationship Boost:** +{graph_boost:.0%}")
+
+                # Success prediction + Create Linkage
+                candidate_actor = next((a for a in eligible_cached if a["id"] == match.get("actor_id")), None)
+                if candidate_actor:
+                    pred_col, btn_col = st.columns([3, 1])
+                    with pred_col:
+                        if st.button(f"Predict Success", key=f"predict_{i}", type="secondary"):
+                            with st.spinner("Analyzing historical patterns..."):
+                                all_eng = get_engagements()
+                                prediction = predict_linkage_success(target_actor, candidate_actor, all_eng)
+                            if "error" not in prediction:
+                                prob = prediction.get("probability", 0)
+                                st.write(f"**Success Probability:** {prob:.0%} ({prediction.get('confidence','').capitalize()} confidence)")
+                                st.caption(prediction.get("summary", ""))
+                                if prediction.get("risk_factors"):
+                                    st.write("**Risks:** " + " | ".join(prediction["risk_factors"]))
+                                if prediction.get("recommendations"):
+                                    st.write("**Actions:** " + " | ".join(prediction["recommendations"]))
+                    with btn_col:
+                        if st.button(f"Create Linkage", key=f"link_{i}", type="primary"):
+                            linkage_type = f"{target_actor['type']}-{candidate_actor['type']}"
+                            bd = score_breakdowns.get(match.get("actor_id"), {})
+                            create_linkage(
+                                target_actor["id"], candidate_actor["id"],
+                                linkage_type, score, match.get("reason", ""), programme,
+                                score_breakdown=bd.get("breakdown")
+                            )
+                            st.success(f"Linkage created: {target_actor['name']} ↔ {match.get('name')}")
+                            st.session_state["match_results"] = []
+
+    elif results and "error" in results[0]:
+        st.error(f"Matching failed: {results[0].get('error', 'Unknown error')}")
 
 
 # ============================================================

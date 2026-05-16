@@ -38,11 +38,19 @@ def init_db():
             match_score REAL,
             match_reason TEXT,
             programme TEXT,
+            score_breakdown TEXT,  -- JSON: per-dimension scores from the formula engine
             created_at TEXT DEFAULT (datetime('now')),
             FOREIGN KEY (actor_a_id) REFERENCES actors(id),
             FOREIGN KEY (actor_b_id) REFERENCES actors(id)
         )
     """)
+
+    # Safe migration: add score_breakdown to existing databases that don't have it yet
+    try:
+        c.execute("ALTER TABLE linkages ADD COLUMN score_breakdown TEXT")
+        conn.commit()
+    except Exception:
+        pass  # Column already exists
 
     c.execute("""
         CREATE TABLE IF NOT EXISTS engagements (
@@ -104,12 +112,14 @@ def get_actor(actor_id):
 
 # --- Linkages ---
 
-def create_linkage(actor_a_id, actor_b_id, linkage_type, match_score, match_reason, programme):
+def create_linkage(actor_a_id, actor_b_id, linkage_type, match_score, match_reason,
+                   programme, score_breakdown=None):
     conn = get_conn()
     c = conn.cursor()
     c.execute(
-        "INSERT INTO linkages (actor_a_id, actor_b_id, linkage_type, match_score, match_reason, programme) VALUES (?,?,?,?,?,?)",
-        (actor_a_id, actor_b_id, linkage_type, match_score, match_reason, programme)
+        "INSERT INTO linkages (actor_a_id, actor_b_id, linkage_type, match_score, match_reason, programme, score_breakdown) VALUES (?,?,?,?,?,?,?)",
+        (actor_a_id, actor_b_id, linkage_type, match_score, match_reason, programme,
+         json.dumps(score_breakdown) if score_breakdown else None)
     )
     conn.commit()
     linkage_id = c.lastrowid

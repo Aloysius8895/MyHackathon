@@ -29,22 +29,84 @@ def _clean_json(raw: str) -> str:
     return raw.strip()
 
 
-def find_matches(target_actor: dict, candidate_actors: list, programme: str = "", top_n: int = 5) -> list:
+def find_matches(target_actor: dict, candidate_actors: list, programme: str = "",
+                 top_n: int = 5, score_breakdowns: dict = None) -> list:
     """
-    Use Gemini to rank candidate_actors against target_actor.
-    Returns list of dicts: {actor_id, name, score, reason, confidence, bias_flag}
+    Step 7: Gemini explains pre-scored candidates (hybrid mode) or ranks from scratch (fallback).
+
+    Hybrid mode  — pass score_breakdowns={actor_id: {final_score, breakdown, ...}}
+                   Gemini accepts formula scores as-is and adds reason + risk_note.
+    Fallback mode — score_breakdowns=None → pure LLM scoring (original behaviour).
+
+    Returns list of dicts: {actor_id, name, score, reason, risk_note, confidence, bias_flag}
     """
     if not candidate_actors:
         return []
 
-    candidates_text = "\n\n".join([
-        f"CANDIDATE {i+1} (ID:{a['id']}):\n{_build_actor_summary(a)}"
-        for i, a in enumerate(candidate_actors)
-    ])
+    # Build candidate text blocks, injecting formula scores when available
+    candidate_blocks = []
+    for i, a in enumerate(candidate_actors):
+        block = f"CANDIDATE {i+1} (ID:{a['id']}):\n{_build_actor_summary(a)}"
+        if score_breakdowns and a["id"] in score_breakdowns:
+            sd = score_breakdowns[a["id"]]
+            bd = sd.get("breakdown", {})
+            fs = sd.get("final_score", 0)
+            breakdown_lines = "\n".join([
+                f"  - Industry Match (20%):       {bd.get('industry', 0):.0%}",
+                f"  - Needs/Expertise (25%):      {bd.get('needs_expertise', 0):.0%}",
+                f"  - Stage/Context (15%):        {bd.get('stage_context', 0):.0%}",
+                f"  - Semantic Similarity (15%):  {bd.get('semantic_similarity', 0):.0%}",
+                f"  - Availability (10%):         {bd.get('availability', 0):.0%}",
+                f"  - Historical Feedback (10%):  {bd.get('historical_feedback', 0):.0%}",
+                f"  - Programme/Geography (5%):   {bd.get('programme_geography', 0):.0%}",
+            ])
+            block += f"\nFormula Match Score: {fs:.2f}\nScore Breakdown:\n{breakdown_lines}"
+        candidate_blocks.append(block)
 
-    prompt = f"""You are an AI ecosystem relationship manager for an innovation programme platform.
+    candidates_text = "\n\n".join(candidate_blocks)
 
-Your task is to evaluate and rank candidate actors for a match with the target actor below.
+    if score_breakdowns:
+        prompt = f"""You are an AI ecosystem relationship explainer for an innovation programme platform.
+Programme context: {programme if programme else 'General innovation programme'}
+
+TARGET ACTOR:
+{_build_actor_summary(target_actor)}
+
+CANDIDATES WITH PRE-COMPUTED FORMULA SCORES:
+{candidates_text}
+
+Your job is to explain — NOT re-score — each candidate.
+
+For each candidate:
+1. Use the Formula Match Score exactly as given — copy it as the "score" field (float 0.0–1.0)
+2. Write a reason (2–3 sentences) explaining WHY this match is valuable based ONLY on the actor profiles above
+3. Write a risk_note — one specific gap or concern visible in the profiles
+4. Set confidence: "high" if score ≥ 0.65, "medium" if 0.35–0.64, "low" if < 0.35
+5. Set bias_flag to true if one candidate dominates the shortlist
+
+Rules you MUST follow:
+- Only cite information present in the actor profiles — never invent credentials or history
+- The risk_note must be specific to this pair, not a generic statement
+- Do not change the score value
+
+Return ONLY a valid JSON array ranked by score descending:
+[
+  {{
+    "actor_id": <integer id>,
+    "name": "<name>",
+    "score": <copy the Formula Match Score exactly>,
+    "reason": "<why this match is valuable>",
+    "risk_note": "<one specific risk or gap>",
+    "confidence": "<high|medium|low>",
+    "bias_flag": <true|false>
+  }}
+]
+
+Return top {top_n} candidates only. Return ONLY the JSON array, no other text."""
+
+    else:
+        # Fallback: pure LLM scoring (no formula scores provided)
+        prompt = f"""You are an AI ecosystem relationship manager for an innovation programme platform.
 Programme context: {programme if programme else 'General innovation programme'}
 
 TARGET ACTOR:
@@ -56,16 +118,20 @@ CANDIDATES TO EVALUATE:
 For each candidate, provide:
 1. A match score from 0.0 to 1.0 (1.0 = perfect match)
 2. A concise reason explaining WHY this match is valuable (2-3 sentences)
-3. A confidence level: "high", "medium", or "low"
-4. Any bias flag if the same candidate dominates too many matches (true/false)
+3. A risk_note — one specific gap or concern about this pairing
+4. A confidence level: "high", "medium", or "low"
+5. A bias flag if the same candidate dominates too many matches (true/false)
 
-Return ONLY a valid JSON array with this exact structure:
+Only cite information present in the actor profiles. Never invent credentials or history.
+
+Return ONLY a valid JSON array:
 [
   {{
     "actor_id": <integer id>,
     "name": "<name>",
     "score": <float 0.0-1.0>,
     "reason": "<why this match is good>",
+    "risk_note": "<one specific risk or gap>",
     "confidence": "<high|medium|low>",
     "bias_flag": <true|false>
   }}
@@ -75,12 +141,9 @@ Rank by score descending. Return top {top_n} candidates only. Return ONLY the JS
 
     try:
         response = model.generate_content(prompt)
-        raw = response.text.strip()
-
-        raw = _clean_json(raw)
+        raw = _clean_json(response.text.strip())
         results = json.loads(raw)
         return results[:top_n]
-
     except Exception as e:
         return [{"error": str(e)}]
 
