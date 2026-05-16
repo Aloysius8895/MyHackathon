@@ -4,9 +4,11 @@ import { motion } from "framer-motion"
 import { COMPANIES, MENTORS, PAST_ENGAGEMENTS, SECTOR_COLORS } from "../data/mockData"
 import { runAgent } from "../api/agent"
 import AgentLog from "../components/AgentLog"
+import { useLang } from "../context/LanguageContext"
 
 export default function InputPage({ setMatches, loading, setLoading, logs, setLogs, customData }) {
   const navigate = useNavigate()
+  const { t } = useLang()
 
   function addLog(msg) {
     setLogs(prev => [...prev, { msg, time: new Date().toLocaleTimeString() }])
@@ -19,11 +21,11 @@ export default function InputPage({ setMatches, loading, setLoading, logs, setLo
     try {
       const results = await runAgent(addLog, customData)
       setMatches(results)
-      toast.success(`${results.length} pairings generated!`)
+      toast.success(t("toast_pairings", results.length))
       navigate("/matches")
     } catch (e) {
       addLog("Error: " + e.message)
-      toast.error("Agent failed")
+      toast.error(t("toast_agent_failed"))
     }
     setLoading(false)
   }
@@ -31,31 +33,28 @@ export default function InputPage({ setMatches, loading, setLoading, logs, setLo
   return (
     <div className="max-w-6xl mx-auto px-6 py-16 space-y-16">
 
-      {/* Hero section */}
       <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }} className="space-y-6">
         <div className="inline-flex items-center gap-2 bg-purple-950/40 border border-purple-800/30 px-4 py-2 rounded-full">
           <span className="w-2 h-2 rounded-full bg-purple-400 pulse-dot"/>
-          <span className="text-sm text-purple-300 font-medium">Agentic matching system</span>
+          <span className="text-sm text-purple-300 font-medium">{t("badge_agentic")}</span>
         </div>
         <h1 className="font-display text-6xl font-black leading-none tracking-tight">
-          <span className="text-white">Ecosystem</span><br/>
-          <span className="text-gradient">Intelligence</span>
+          <span className="text-white">{t("hero_title_1")}</span><br/>
+          <span className="text-gradient">{t("hero_title_2")}</span>
         </h1>
         <p className="text-slate-400 text-xl max-w-xl leading-relaxed">
-          One click. The agent reads the graph, scores every relationship, and
-          matches your entire cohort — no spreadsheets, no manual coordination.
+          {t("hero_desc")}
         </p>
       </motion.div>
 
-      {/* Stats row */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.1 }}
         className="grid grid-cols-3 gap-6">
         {[
-          { value: COMPANIES.length, label: "Companies loaded", color: "text-purple-400" },
-          { value: MENTORS.length, label: "Mentors available", color: "text-teal-400" },
-          { value: PAST_ENGAGEMENTS.length, label: "Graph records", color: "text-amber-400" }
+          { value: COMPANIES.length, label: t("stat_companies"), color: "text-purple-400" },
+          { value: MENTORS.length, label: t("stat_mentors"), color: "text-teal-400" },
+          { value: PAST_ENGAGEMENTS.length, label: t("stat_graph"), color: "text-amber-400" }
         ].map((s, i) => (
           <div key={i} className="glass rounded-2xl p-6 text-center">
             <div className={`stat-number ${s.color}`}>{s.value}</div>
@@ -64,15 +63,13 @@ export default function InputPage({ setMatches, loading, setLoading, logs, setLo
         ))}
       </motion.div>
 
-      {/* Data panels */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.2 }}
         className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-        {/* Companies */}
         <div className="glass rounded-2xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-slate-500 uppercase tracking-widest font-medium">Companies</p>
+            <p className="text-xs text-slate-500 uppercase tracking-widest font-medium">{t("label_companies")}</p>
             <span className="text-xs bg-purple-950 text-purple-300 border border-purple-800/40 px-2 py-0.5 rounded-full">{COMPANIES.length}</span>
           </div>
           {COMPANIES.map(c => {
@@ -89,10 +86,9 @@ export default function InputPage({ setMatches, loading, setLoading, logs, setLo
           })}
         </div>
 
-        {/* Mentors */}
         <div className="glass rounded-2xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-slate-500 uppercase tracking-widest font-medium">Mentors</p>
+            <p className="text-xs text-slate-500 uppercase tracking-widest font-medium">{t("label_mentors")}</p>
             <span className="text-xs bg-teal-950 text-teal-300 border border-teal-800/40 px-2 py-0.5 rounded-full">{MENTORS.length}</span>
           </div>
           {MENTORS.map(m => (
@@ -108,11 +104,10 @@ export default function InputPage({ setMatches, loading, setLoading, logs, setLo
           ))}
         </div>
 
-        {/* Graph memory */}
         <div className="glass rounded-2xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <p className="text-xs text-slate-500 uppercase tracking-widest font-medium">Graph memory</p>
-            <span className="text-xs bg-amber-950 text-amber-300 border border-amber-800/40 px-2 py-0.5 rounded-full">{PAST_ENGAGEMENTS.length} past</span>
+            <p className="text-xs text-slate-500 uppercase tracking-widest font-medium">{t("label_graph_memory")}</p>
+            <span className="text-xs bg-amber-950 text-amber-300 border border-amber-800/40 px-2 py-0.5 rounded-full">{t("label_past", PAST_ENGAGEMENTS.length)}</span>
           </div>
           {PAST_ENGAGEMENTS.map((p, i) => (
             <div key={i} className="flex items-start justify-between gap-2">
@@ -126,10 +121,8 @@ export default function InputPage({ setMatches, loading, setLoading, logs, setLo
         </div>
       </motion.div>
 
-      {/* Agent log */}
       <AgentLog logs={logs} loading={loading} />
 
-      {/* CTA */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: 0.3 }} className="space-y-4">
         <button onClick={handleRun} disabled={loading}
@@ -141,14 +134,14 @@ export default function InputPage({ setMatches, loading, setLoading, logs, setLo
             boxShadow: loading ? "none" : "0 0 40px rgba(124,58,237,0.4), inset 0 1px 0 rgba(255,255,255,0.1)"
           }}>
           <span className="relative z-10">
-            {loading ? "Agent running..." : "Run EcoGraph agent →"}
+            {loading ? t("btn_running") : t("btn_run")}
           </span>
           {!loading && (
             <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"/>
           )}
         </button>
         <p className="text-center text-xs text-slate-700">
-          Human action ends here · Agent handles all matching, planning and reporting
+          {t("run_note")}
         </p>
       </motion.div>
     </div>

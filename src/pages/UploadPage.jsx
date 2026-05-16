@@ -2,9 +2,20 @@ import { useState, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { Upload, FileSpreadsheet, CheckCircle, AlertTriangle, X, ChevronRight } from "lucide-react"
-import { parseExcelFile, mapCompanies, mapMentors, mapEngagements } from "../utils/parseExcel"
+import { parseExcelFile, mapCompanies, mapMentors, mapEngagements, deriveCompaniesFromEngagements } from "../utils/parseExcel"
 import { COMPANIES, MENTORS, PAST_ENGAGEMENTS } from "../data/mockData"
 import toast from "react-hot-toast"
+import { useLang } from "../context/LanguageContext"
+import { saveHistoryUpload } from "../api/history"
+
+function hasColumns(rows, columns) {
+  const keys = Object.keys(rows?.[0] ?? {}).map(key => key.toLowerCase())
+  return columns.some(column => keys.includes(column.toLowerCase()))
+}
+
+function findSheet(sheetNames, sheets, matcher) {
+  return sheetNames.find(name => matcher(name, sheets[name] ?? []))
+}
 
 export default function UploadPage({ setCustomData }) {
   const navigate = useNavigate()
@@ -13,12 +24,13 @@ export default function UploadPage({ setCustomData }) {
   const [parsing, setParsing] = useState(false)
   const [preview, setPreview] = useState(null)
   const [error, setError] = useState("")
+  const { t } = useLang()
 
   async function handleFile(f) {
     if (!f) return
     const ext = f.name.split(".").pop().toLowerCase()
     if (!["xlsx", "xls", "csv"].includes(ext)) {
-      setError("Please upload an Excel (.xlsx, .xls) or CSV file")
+      setError(t("error_filetype"))
       return
     }
     setError("")
@@ -26,16 +38,26 @@ export default function UploadPage({ setCustomData }) {
     try {
       const sheets = await parseExcelFile(f)
       const sheetNames = Object.keys(sheets)
-      const companySheet = sheets["companies"] || sheets["company"] ||
-        sheets[sheetNames.find(s => s.includes("compan"))] || sheets[sheetNames[0]]
-      const mentorSheet = sheets["mentors"] || sheets["mentor"] ||
-        sheets[sheetNames.find(s => s.includes("mentor"))] || sheets[sheetNames[1]]
-      const engagementSheet = sheets["engagements"] || sheets["past"] ||
-        sheets[sheetNames.find(s => s.includes("engag") || s.includes("past"))] || sheets[sheetNames[2]]
-      const companies = companySheet ? mapCompanies(companySheet) : COMPANIES
+      const companySheetName = findSheet(sheetNames, sheets, (name, rows) =>
+        (name.includes("compan") || name.includes("startup")) && !name.includes("history") ||
+        hasColumns(rows, ["Company Name", "Startup Name"])
+      )
+      const mentorSheetName = findSheet(sheetNames, sheets, (name, rows) =>
+        name.includes("mentor") || name.includes("lecturer") || name.includes("advisor") ||
+        hasColumns(rows, ["Mentor Name", "Lecturer Name", "Expertise Area"])
+      )
+      const engagementSheetName = findSheet(sheetNames, sheets, (name, rows) =>
+        name.includes("engag") || name.includes("past") || name.includes("session") || name.includes("history") ||
+        hasColumns(rows, ["Session ID", "Topic Covered", "Programme Name"])
+      )
+      const mentorSheet = mentorSheetName ? sheets[mentorSheetName] : null
+      const engagementSheet = engagementSheetName ? sheets[engagementSheetName] : null
       const mentors = mentorSheet ? mapMentors(mentorSheet) : MENTORS
       const engagements = engagementSheet ? mapEngagements(engagementSheet) : PAST_ENGAGEMENTS
-      setPreview({ companies, mentors, engagements, sheetNames })
+      const companySheet = companySheetName ? sheets[companySheetName] : null
+      const companies = companySheet ? mapCompanies(companySheet) : deriveCompaniesFromEngagements(engagements)
+      const resolvedCompanies = companies.length ? companies : COMPANIES
+      setPreview({ companies: resolvedCompanies, mentors, engagements, sheetNames })
       setParsing(false)
     } catch (e) {
       setError(e.message)
@@ -50,16 +72,21 @@ export default function UploadPage({ setCustomData }) {
     if (f) handleFile(f)
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!preview) return
     setCustomData(preview)
-    toast.success("Dataset loaded — agent will use your data!")
+    const saved = await saveHistoryUpload(preview)
+    if (saved) {
+      toast.success(t("toast_data_loaded"))
+    } else {
+      toast.error("Dataset loaded locally, but history was not saved to the backend.")
+    }
     navigate("/")
   }
 
   function handleUseMock() {
     setCustomData(null)
-    toast("Using default demo dataset")
+    toast(t("toast_using_demo"))
     navigate("/")
   }
 
@@ -70,29 +97,27 @@ export default function UploadPage({ setCustomData }) {
         transition={{ duration: 0.5 }} className="space-y-4">
         <div className="inline-flex items-center gap-2 bg-teal-950/40 border border-teal-800/30 px-4 py-2 rounded-full">
           <FileSpreadsheet size={14} className="text-teal-400" />
-          <span className="text-sm text-teal-300 font-medium">Excel / CSV import</span>
+          <span className="text-sm text-teal-300 font-medium">{t("badge_upload")}</span>
         </div>
         <h1 className="font-display text-5xl font-black leading-none tracking-tight">
-          <span className="text-white">Upload your</span><br/>
-          <span className="text-gradient">ecosystem data</span>
+          <span className="text-white">{t("upload_title_1")}</span><br/>
+          <span className="text-gradient">{t("upload_title_2")}</span>
         </h1>
         <p className="text-slate-400 text-lg max-w-xl leading-relaxed">
-          Upload your Excel file with company and mentor data.
-          The agent matches relationships based on your real data.
+          {t("upload_desc")}
         </p>
       </motion.div>
 
-      {/* Format guide */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}
         className="glass rounded-2xl p-5 space-y-3">
-        <p className="text-sm font-medium text-slate-300">Expected Excel column names</p>
+        <p className="text-sm font-medium text-slate-300">{t("upload_format_title")}</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
           {[
-            { sheet: "Sheet 1: Companies", color: "text-purple-400",
+            { sheet: t("sheet1"), color: "text-purple-400",
               cols: ["Company Name", "Sector", "Stage", "Ask 1", "Ask 2", "Ask 3", "Founder"] },
-            { sheet: "Sheet 2: Mentors", color: "text-teal-400",
+            { sheet: t("sheet2"), color: "text-teal-400",
               cols: ["Mentor Name", "Title", "Expertise 1", "Expertise 2", "Sector", "Exit 1"] },
-            { sheet: "Sheet 3: Engagements", color: "text-amber-400",
+            { sheet: t("sheet3"), color: "text-amber-400",
               cols: ["Mentor ID", "Company", "Outcome", "Score"] }
           ].map(s => (
             <div key={s.sheet} className="space-y-2">
@@ -108,7 +133,6 @@ export default function UploadPage({ setCustomData }) {
         </div>
       </motion.div>
 
-      {/* Drop zone */}
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 }}>
         <div
           onDragOver={e => { e.preventDefault(); setDragging(true) }}
@@ -128,9 +152,9 @@ export default function UploadPage({ setCustomData }) {
             </div>
             <div>
               <p className="text-white font-medium text-lg">
-                {dragging ? "Drop to upload" : "Drop your Excel file here"}
+                {dragging ? t("drop_active") : t("drop_idle")}
               </p>
-              <p className="text-slate-500 text-sm mt-1">or click to browse · .xlsx .xls .csv</p>
+              <p className="text-slate-500 text-sm mt-1">{t("drop_hint")}</p>
             </div>
             {parsing && (
               <div className="inline-flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-full">
@@ -140,7 +164,7 @@ export default function UploadPage({ setCustomData }) {
                       style={{ animationDelay: `${i*0.15}s` }}/>
                   ))}
                 </span>
-                <span className="text-sm text-slate-400">Parsing file...</span>
+                <span className="text-sm text-slate-400">{t("parsing")}</span>
               </div>
             )}
           </div>
@@ -161,9 +185,9 @@ export default function UploadPage({ setCustomData }) {
             <div className="flex items-center gap-3 bg-emerald-950/40 border border-emerald-800/40 rounded-2xl p-4">
               <CheckCircle size={20} className="text-emerald-400 shrink-0" />
               <div>
-                <p className="text-sm font-medium text-emerald-300">File parsed successfully</p>
+                <p className="text-sm font-medium text-emerald-300">{t("parse_success")}</p>
                 <p className="text-xs text-emerald-600 mt-0.5">
-                  {preview.companies.length} companies · {preview.mentors.length} mentors · {preview.engagements.length} engagements
+                  {t("parse_counts", preview.companies.length, preview.mentors.length, preview.engagements.length)}
                 </p>
               </div>
               <button onClick={() => setPreview(null)}
@@ -175,7 +199,7 @@ export default function UploadPage({ setCustomData }) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="glass rounded-2xl p-5 space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-slate-500 uppercase tracking-widest">Companies</p>
+                  <p className="text-xs text-slate-500 uppercase tracking-widest">{t("label_companies")}</p>
                   <span className="text-xs bg-purple-950 text-purple-300 border border-purple-800/40 px-2 py-0.5 rounded-full">
                     {preview.companies.length}
                   </span>
@@ -195,7 +219,7 @@ export default function UploadPage({ setCustomData }) {
 
               <div className="glass rounded-2xl p-5 space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-xs text-slate-500 uppercase tracking-widest">Mentors</p>
+                  <p className="text-xs text-slate-500 uppercase tracking-widest">{t("label_mentors")}</p>
                   <span className="text-xs bg-teal-950 text-teal-300 border border-teal-800/40 px-2 py-0.5 rounded-full">
                     {preview.mentors.length}
                   </span>
@@ -224,7 +248,7 @@ export default function UploadPage({ setCustomData }) {
                 boxShadow: "0 0 40px rgba(20,184,166,0.3)"
               }}>
               <CheckCircle size={20} />
-              Use this data for matching
+              {t("btn_use_data")}
               <ChevronRight size={20} />
             </button>
           </motion.div>
@@ -233,14 +257,14 @@ export default function UploadPage({ setCustomData }) {
 
       <div className="flex items-center gap-4">
         <div className="flex-1 h-px bg-slate-800"/>
-        <span className="text-xs text-slate-600">or</span>
+        <span className="text-xs text-slate-600">{t("or_divider")}</span>
         <div className="flex-1 h-px bg-slate-800"/>
       </div>
 
       <button onClick={handleUseMock}
         className="w-full py-4 rounded-2xl font-medium text-sm text-slate-400
           hover:text-slate-200 transition-all border border-slate-800 hover:border-slate-600">
-        Use demo dataset instead
+        {t("btn_use_demo")}
       </button>
     </div>
   )

@@ -162,6 +162,49 @@ class MatchRunResponse(BaseModel):
     recommendations: list[Recommendation]
 
 
+class WorkflowIngestionResult(CamelModel):
+    file_name: str = Field(alias="fileName")
+    actor_type: ExtractionActorType = Field(alias="actorType")
+    actor_id: str | None = Field(default=None, alias="actorId")
+    display_name: str | None = Field(default=None, alias="displayName")
+    status: str
+    extraction_status: ExtractionStatus | None = Field(default=None, alias="extractionStatus")
+    extraction_confidence: float | None = Field(default=None, alias="extractionConfidence")
+    vector_dimensions: int = Field(default=0, alias="vectorDimensions")
+    missing_fields: list[str] = Field(default_factory=list, alias="missingFields")
+    error: str | None = None
+
+
+class WorkflowMatchResult(CamelModel):
+    company_id: str = Field(alias="companyId")
+    display_name: str = Field(alias="displayName")
+    recommendations: list[Recommendation] = Field(default_factory=list)
+    error: str | None = None
+
+
+class WorkflowRunResponse(CamelModel):
+    ingested: list[WorkflowIngestionResult] = Field(default_factory=list)
+    matches: list[WorkflowMatchResult] = Field(default_factory=list)
+    report: str
+    report_source: str = Field(alias="reportSource")
+
+
+class HistoryUpload(CamelModel):
+    companies: list[dict[str, Any]] = Field(default_factory=list)
+    mentors: list[dict[str, Any]] = Field(default_factory=list)
+    engagements: list[dict[str, Any]] = Field(default_factory=list)
+    source: str = "frontend-upload"
+    uploaded_at: datetime = Field(default_factory=utc_now, alias="uploadedAt")
+
+
+class HistoryUploadSaveResponse(CamelModel):
+    status: str
+    companies: int
+    mentors: int
+    engagements: int
+    uploaded_at: datetime = Field(alias="uploadedAt")
+
+
 class RecommendationDecisionRequest(BaseModel):
     admin_id: str
     note: str | None = None

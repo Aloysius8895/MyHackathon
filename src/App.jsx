@@ -4,8 +4,9 @@ import { Toaster } from "react-hot-toast"
 import Navbar from "./components/Navbar"
 import InputPage from "./pages/InputPage"
 import MatchesPage from "./pages/MatchesPage"
-import GraphPage from "./pages/GraphPage"
+import HistoryPage from "./pages/HistoryPage"
 import UploadPage from "./pages/UploadPage"
+import { LanguageProvider } from "./context/LanguageContext"
 
 export default function App() {
   const [matches, setMatches] = useState([])
@@ -14,6 +15,7 @@ export default function App() {
   const [customData, setCustomData] = useState(null)
 
   return (
+    <LanguageProvider>
     <BrowserRouter>
       <div className="min-h-screen bg-grid relative overflow-x-hidden">
         <div className="orb orb-purple" />
@@ -37,11 +39,12 @@ export default function App() {
                 customData={customData} />
             }/>
             <Route path="/matches" element={<MatchesPage matches={matches} />}/>
-            <Route path="/graph" element={<GraphPage matches={matches} />}/>
+            <Route path="/history" element={<HistoryPage customData={customData} />}/>
             <Route path="/upload" element={<UploadPage setCustomData={setCustomData} />}/>
           </Routes>
         </div>
       </div>
     </BrowserRouter>
+    </LanguageProvider>
   )
 }
