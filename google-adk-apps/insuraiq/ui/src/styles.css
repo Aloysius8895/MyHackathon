@@ -1,0 +1,7 @@
+:root {
+  --brand-color: #2e60e2;
+}
+
+.bot-card p {
+  margin-bottom: 0 !important;
+}

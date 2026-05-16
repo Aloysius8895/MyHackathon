@@ -1,0 +1,17 @@
+[project]
+name = "hybrid-investment-platform"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alpha-vantage>=3.0.0",
+    "fastapi>=0.115.12",
+    "google-adk>=1.3.0",
+    "numpy>=2.3.0",
+    "pandas>=2.3.0",
+    "python-dotenv>=1.1.0",
+    "requests>=2.32.4",
+    "streamlit>=1.45.1",
+    "yfinance>=0.2.63",
+]

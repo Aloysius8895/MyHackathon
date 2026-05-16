@@ -1,0 +1,10 @@
+google-adk
+yfinance
+psutil
+litellm
+google-generativeai
+python-dotenv
+pydantic
+fastapi
+google-cloud-vision
+google

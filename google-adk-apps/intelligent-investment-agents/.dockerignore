@@ -1,0 +1,12 @@
+# .dockerignore
+.env
+.git
+.gitignore
+__pycache__
+*.pyc
+.venv
+*.md
+.python-version
+*.backup
+.DS_Store
+node_modules

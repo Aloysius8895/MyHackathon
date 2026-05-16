@@ -1,0 +1,39 @@
+<nav class="navbar navbar-expand-lg navbar-light bg-white px-3 bevel-navbar">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Insura<strong>IQ</strong></a>
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbarContent"
+      aria-controls="navbarContent"
+      aria-expanded="false"
+      aria-label="Toggle navigation"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div
+      class="collapse navbar-collapse justify-content-end"
+      id="navbarContent"
+    >
+      <ul class="navbar-nav align-items-center" *ngIf="showNavLinks">
+        <li class="nav-item px-4">
+          <a class="nav-link" routerLink="/logout" (click)="logOutUser()"
+            >Logout</a
+          >
+        </li>
+        <li class="nav-item me-3">
+          <img
+            [src]="imageUrl"
+            alt="User Profile"
+            class="rounded-circle"
+            width="40"
+            height="40"
+          />
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
