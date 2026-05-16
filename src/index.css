@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Syne:wght@700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; }
+
+body {
+  background: #020408;
+  color: #e2e8f0;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.font-display { font-family: 'Syne', sans-serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+.bg-grid {
+  background-image:
+    linear-gradient(rgba(124, 58, 237, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 58, 237, 0.03) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.orb-purple {
+  width: 600px; height: 600px;
+  background: rgba(109, 40, 217, 0.12);
+  top: -200px; left: -100px;
+}
+
+.orb-teal {
+  width: 400px; height: 400px;
+  background: rgba(20, 184, 166, 0.08);
+  bottom: -100px; right: -100px;
+}
+
+.glass {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+}
+
+.glass-hover { transition: all 0.3s ease; }
+.glass-hover:hover {
+  background: rgba(15, 23, 42, 0.8);
+  border-color: rgba(124, 58, 237, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 20px 40px rgba(109, 40, 217, 0.15);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #a78bfa 0%, #38bdf8 50%, #34d399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-purple {
+  background: linear-gradient(135deg, #c4b5fd 0%, #818cf8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes border-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(124, 58, 237, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(124, 58, 237, 0.4); }
+}
+.border-glow { animation: border-glow 3s ease-in-out infinite; }
+
+.stat-number {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 2.5rem;
+  line-height: 1;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+.pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-6px); }
+}
+.float { animation: float 4s ease-in-out infinite; }
