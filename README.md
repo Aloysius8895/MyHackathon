@@ -26,6 +26,21 @@ python seed_data.py
 streamlit run app.py
 ```
 
+## Scalability & Cost Model
+| Layer | Current (Demo) | Production |
+|-------|---------------|------------|
+| Database | SQLite (local) | PostgreSQL on Cloud SQL (~RM50/month) |
+| Backend | Local Python | Google Cloud Run (pay-per-request, ~RM0.004/call) |
+| AI Engine | Gemini 2.0 Flash | Same — Flash tier keeps cost low at scale |
+| Storage | Local filesystem | Google Cloud Storage for exports/reports |
+
+**Cost at scale:**
+- 50 programmes/year × 100 matches each = 5,000 Gemini calls/year
+- Estimated AI cost: ~USD 2–5/year (Flash pricing)
+- Total infra cost at MVP scale: < RM200/month
+
+**Flywheel economics:** more data → better matches → less manual correction → lower operational cost per programme cycle.
+
 ## Deployment
 Deployable on **Google Cloud Run** with a managed PostgreSQL backend (swap SQLite in `database.py`). Containerisable via Docker in under 30 minutes.
 
