@@ -16,7 +16,7 @@ st.sidebar.divider()
 
 page = st.sidebar.radio(
     "Navigate",
-    ["Dashboard", "Actors", "AI Matching", "Linkages", "Engagement History"],
+    ["Dashboard", "Actors", "AI Matching", "Linkages", "Engagement History", "About"],
     index=0
 )
 
@@ -377,3 +377,66 @@ elif page == "Engagement History":
     display_df.columns = ["Actor A", "Actor B", "Type", "Outcome", "Rating", "Notes", "Date"]
     display_df["Date"] = display_df["Date"].str[:10]
     st.dataframe(display_df, use_container_width=True, hide_index=True)
+
+
+# ============================================================
+# PAGE: ABOUT
+# ============================================================
+elif page == "About":
+    st.title("About EcoLink")
+    st.caption("Build With AI 2026 KL | MyHack | Cradle Fund Challenge")
+    st.divider()
+
+    st.subheader("Problem")
+    st.write("Cradle manages Malaysia's innovation ecosystem manually — mentor matching, company allocation, and partner coordination all done by hand. No memory. No reuse. Every cycle starts from zero.")
+    col1, col2, col3 = st.columns(3)
+    col1.error("**Ad-hoc Relations**\nEvery match starts from zero. No reuse of successful pairings.")
+    col2.error("**Lost History**\nEngagement outcomes are never recorded or learned from.")
+    col3.error("**No Platform Logic**\nRelationship lifecycles managed via Excel and WhatsApp.")
+
+    st.divider()
+    st.subheader("Stakeholders & Beneficiaries")
+    stakeholders = {
+        "Stakeholder": ["Cradle Programme Managers", "Mentors", "Startups / Companies", "Government / MDEC", "Future Programmes"],
+        "Benefit": [
+            "Eliminate manual coordination — AI-ranked matches instantly",
+            "Matched by expertise, not random assignment",
+            "Access mentors with proven track records in their domain",
+            "Data-driven evidence of ecosystem health and ROI",
+            "Inherit institutional knowledge from all past cycles"
+        ]
+    }
+    st.dataframe(stakeholders, use_container_width=True, hide_index=True)
+
+    st.divider()
+    st.subheader("Why Gemini 2.0 Flash?")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.success("**Reasoning Quality**\nComplex multi-actor matching needs contextual understanding — not keyword search.")
+        st.success("**Structured Output**\nReliably returns strict JSON with scores, reasons, confidence levels.")
+        st.success("**Speed**\nFlash variant gives near-instant responses for live, real-time UX.")
+    with col2:
+        st.success("**Google Ecosystem**\nNative integration with Cloud Run for production deployment.")
+        st.success("**Cost Efficiency**\nFlash tier is cost-effective for high-frequency SaaS matching calls.")
+
+    st.divider()
+    st.subheader("Hallucination Mitigation")
+    hal = {
+        "Method": [
+            "Structured JSON Prompts",
+            "Confidence Scores",
+            "Bias Flags",
+            "Human-in-the-Loop",
+            "Grounded in Real Data",
+            "Explainability"
+        ],
+        "How It Works": [
+            "Every Gemini call demands strict JSON schema — free-form hallucination is structurally blocked",
+            "AI self-reports high/medium/low confidence; low-confidence matches are visually flagged",
+            "AI detects when one actor dominates recommendations and warns the user",
+            "No linkage is created automatically — human must confirm every match",
+            "All prompts include actual actor profiles from the database, not hypotheticals",
+            "Every match includes a written reason — users verify AI logic before acting"
+        ]
+    }
+    st.dataframe(hal, use_container_width=True, hide_index=True)
