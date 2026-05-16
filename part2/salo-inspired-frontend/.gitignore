@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.astro/
+.server-*.log
+.chrome-profile/
+.chrome-profile-mobile/
+screenshots/

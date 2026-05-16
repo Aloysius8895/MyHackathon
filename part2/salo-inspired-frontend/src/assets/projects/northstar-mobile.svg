@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="1629" viewBox="0 0 750 1629">
+  <rect width="750" height="1629" fill="#123b3a"/>
+  <rect x="50" y="70" width="650" height="1489" rx="72" fill="#f8fffd"/>
+  <text x="100" y="186" fill="#123b3a" font-family="Arial, sans-serif" font-size="46" font-weight="700">Northstar</text>
+  <rect x="100" y="270" width="550" height="320" rx="42" fill="#e5fff7"/>
+  <text x="142" y="392" fill="#123b3a" font-family="Arial, sans-serif" font-size="60" font-weight="700">Care made</text>
+  <text x="142" y="462" fill="#123b3a" font-family="Arial, sans-serif" font-size="60" font-weight="700">clear</text>
+  <rect x="100" y="662" width="550" height="190" rx="32" fill="#123b3a"/>
+  <rect x="142" y="736" width="284" height="28" rx="14" fill="#fff"/>
+  <rect x="100" y="914" width="254" height="310" rx="32" fill="#e5fff7"/>
+  <rect x="396" y="914" width="254" height="310" rx="32" fill="#e5fff7"/>
+  <circle cx="228" cy="1068" r="58" fill="#61fdfc"/>
+  <path d="M190 1068h76M228 1030v76" stroke="#123b3a" stroke-width="16" stroke-linecap="round"/>
+</svg>

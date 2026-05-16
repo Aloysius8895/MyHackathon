@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="1629" viewBox="0 0 750 1629">
+  <rect width="750" height="1629" fill="#111"/>
+  <rect x="54" y="76" width="642" height="1477" rx="68" fill="#f5f1ea"/>
+  <circle cx="598" cy="188" r="42" fill="#ff7a2f"/>
+  <text x="104" y="200" fill="#101010" font-family="Arial, sans-serif" font-size="50" font-weight="700">Aurora</text>
+  <text x="104" y="350" fill="#101010" font-family="Arial, sans-serif" font-size="76" font-weight="700">Make AI</text>
+  <text x="104" y="432" fill="#101010" font-family="Arial, sans-serif" font-size="76" font-weight="700">feel human</text>
+  <rect x="104" y="516" width="542" height="230" rx="34" fill="#101010"/>
+  <path d="M160 662c72-130 166 30 260-92 52-68 96-66 142-8" fill="none" stroke="#b9ff36" stroke-width="18" stroke-linecap="round"/>
+  <rect x="104" y="808" width="248" height="300" rx="32" fill="#fff"/>
+  <rect x="398" y="808" width="248" height="300" rx="32" fill="#101010"/>
+  <rect x="104" y="1170" width="542" height="148" rx="34" fill="#ff7a2f"/>
+  <text x="150" y="1260" fill="#101010" font-family="Arial, sans-serif" font-size="42" font-weight="700">Book Demo</text>
+</svg>

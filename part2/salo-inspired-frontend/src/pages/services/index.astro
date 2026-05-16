@@ -1,0 +1,92 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { featuredMentor } from "../../data/mentors";
+
+const mentor = featuredMentor;
+const availableSlots = mentor.maxCapacity - mentor.activeRelationships;
+---
+
+<BaseLayout title={`${mentor.name} Mentor Detail - LinkOS`}>
+  <Header />
+  <main class="page mentor-detail-page">
+    <section class="container mentor-detail-hero">
+      <a class="back-link" href="/blog/">← Back to high relationship mentors</a>
+      <div class="mentor-detail-grid">
+        <div class="mentor-profile-panel">
+          <span class="mentor-avatar mentor-avatar-large" aria-hidden="true">{mentor.initials}</span>
+          <p class="eyebrow">Mentor detail</p>
+          <h1>{mentor.name}</h1>
+          <p>{mentor.role}</p>
+          <div class="mentor-meta detail-meta">
+            <span>{mentor.industry}</span>
+            <span>{mentor.country}</span>
+            <span>{availableSlots} slots available</span>
+          </div>
+        </div>
+
+        <aside class="score-panel" aria-label="Relationship score breakdown">
+          <p class="eyebrow">Relationship fit</p>
+          <strong>{mentor.relationshipScore}</strong>
+          <span>High relationship score</span>
+          <div class="score-bar" aria-hidden="true">
+            <i style={`width:${mentor.relationshipScore}%`}></i>
+          </div>
+          <p>{mentor.riskNote}</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="container detail-sections">
+      <div class="detail-card">
+        <p class="eyebrow">Expertise</p>
+        <div class="chip-row">
+          {mentor.expertise.map((skill) => <span>{skill}</span>)}
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <p class="eyebrow">Stage experience</p>
+        <div class="chip-row">
+          {mentor.stageExperience.map((stage) => <span>{stage}</span>)}
+        </div>
+      </div>
+
+      <div class="detail-card wide">
+        <p class="eyebrow">Graph-lite evidence</p>
+        <ul class="evidence-list">
+          {mentor.graphEvidence.map((item) => <li>{item}</li>)}
+        </ul>
+      </div>
+
+      <div class="detail-card">
+        <p class="eyebrow">Capacity snapshot</p>
+        <dl class="metric-list">
+          <div>
+            <dt>Active relationships</dt>
+            <dd>{mentor.activeRelationships}</dd>
+          </div>
+          <div>
+            <dt>Max capacity</dt>
+            <dd>{mentor.maxCapacity}</dd>
+          </div>
+          <div>
+            <dt>Feedback score</dt>
+            <dd>{mentor.feedbackScore}</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="detail-card">
+        <p class="eyebrow">Admin decision support</p>
+        <p>
+          Use this mentor when the company has verified fundraising needs,
+          a seed-stage context, and no conflict edge. The final relationship
+          should still require admin approval.
+        </p>
+      </div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>
