@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from database import init_db, add_actor, get_actors, get_actor, create_linkage, get_linkages, update_linkage_status, add_engagement, get_engagements, get_stats
-from gemini_engine import find_matches, explain_linkage, suggest_programme_matches
+from gemini_engine import find_matches, explain_linkage, suggest_programme_matches, predict_linkage_success, analyze_ecosystem_health
 
 st.set_page_config(page_title="EcoLink", page_icon="🔗", layout="wide")
 init_db()
@@ -22,6 +22,12 @@ page = st.sidebar.radio(
 st.sidebar.divider()
 st.sidebar.caption("Powered by Gemini 2.0 Flash")
 st.sidebar.caption("Build With AI 2026 — MyHack")
+st.sidebar.divider()
+st.sidebar.markdown("**AI Ethics**")
+st.sidebar.caption("✅ Confidence scores on every match")
+st.sidebar.caption("✅ Bias flags for overrepresented actors")
+st.sidebar.caption("✅ Human approval before linkage is created")
+st.sidebar.caption("✅ All AI reasoning is explainable & auditable")
 
 # ============================================================
 # PAGE: DASHBOARD
@@ -70,6 +76,34 @@ if page == "Dashboard":
             st.plotly_chart(fig, use_container_width=True)
         else:
             st.info("Add actors to see the ecosystem overview.")
+
+    st.divider()
+    st.subheader("Ecosystem Health")
+    if st.button("Run AI Health Check", type="secondary"):
+        with st.spinner("Gemini is analyzing ecosystem health..."):
+            health = analyze_ecosystem_health(actors, get_linkages(), get_engagements())
+        if "error" not in health:
+            score = health.get("health_score", 0)
+            status = health.get("status", "Unknown")
+            color = "green" if score >= 70 else "orange" if score >= 40 else "red"
+            h_col1, h_col2 = st.columns([1, 3])
+            with h_col1:
+                st.metric("Health Score", f"{score}/100", delta=status)
+            with h_col2:
+                if health.get("alert"):
+                    st.error(f"Alert: {health['alert']}")
+                st.write(f"**Top Recommendation:** {health.get('top_recommendation', 'N/A')}")
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.write("**Strengths:**")
+                    for s in health.get("strengths", []):
+                        st.write(f"- {s}")
+                with c2:
+                    st.write("**Gaps:**")
+                    for g in health.get("gaps", []):
+                        st.write(f"- {g}")
+        else:
+            st.error(f"Health check failed: {health['error']}")
 
     st.divider()
     st.subheader("AI Programme Overview")
@@ -203,16 +237,31 @@ elif page == "AI Matching":
                     if bias_flag:
                         st.warning("Bias Flag: This actor appears frequently in top matches. Consider diversifying.")
 
-                    # Create Linkage button
+                    # Success prediction + Create Linkage
                     candidate_actor = next((a for a in smart_candidates if a["id"] == match.get("actor_id")), None)
                     if candidate_actor:
-                        if st.button(f"Create Linkage with {match.get('name')}", key=f"link_{i}"):
-                            linkage_type = f"{target_actor['type']}-{candidate_actor['type']}"
-                            create_linkage(
-                                target_actor["id"], candidate_actor["id"],
-                                linkage_type, score, match.get("reason", ""), programme
-                            )
-                            st.success(f"Linkage created between {target_actor['name']} and {match.get('name')}!")
+                        pred_col, btn_col = st.columns([3, 1])
+                        with pred_col:
+                            if st.button(f"Predict Success", key=f"predict_{i}", type="secondary"):
+                                with st.spinner("Analyzing historical patterns..."):
+                                    all_eng = get_engagements()
+                                    prediction = predict_linkage_success(target_actor, candidate_actor, all_eng)
+                                if "error" not in prediction:
+                                    prob = prediction.get("probability", 0)
+                                    st.write(f"**Success Probability:** {prob:.0%} ({prediction.get('confidence','').capitalize()} confidence)")
+                                    st.caption(prediction.get("summary", ""))
+                                    if prediction.get("risk_factors"):
+                                        st.write("**Risks:** " + " | ".join(prediction["risk_factors"]))
+                                    if prediction.get("recommendations"):
+                                        st.write("**Actions:** " + " | ".join(prediction["recommendations"]))
+                        with btn_col:
+                            if st.button(f"Create Linkage", key=f"link_{i}", type="primary"):
+                                linkage_type = f"{target_actor['type']}-{candidate_actor['type']}"
+                                create_linkage(
+                                    target_actor["id"], candidate_actor["id"],
+                                    linkage_type, score, match.get("reason", ""), programme
+                                )
+                                st.success(f"Linkage created between {target_actor['name']} and {match.get('name')}!")
         else:
             error = results[0].get("error", "Unknown error") if results else "No results"
             st.error(f"Matching failed: {error}")

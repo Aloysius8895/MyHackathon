@@ -21,6 +21,14 @@ def _build_actor_summary(actor: dict) -> str:
     )
 
 
+def _clean_json(raw: str) -> str:
+    if raw.startswith("```"):
+        lines = raw.split("\n")
+        inner = lines[1:-1] if lines[-1].strip() == "```" else lines[1:]
+        raw = "\n".join(inner)
+    return raw.strip()
+
+
 def find_matches(target_actor: dict, candidate_actors: list, programme: str = "", top_n: int = 5) -> list:
     """
     Use Gemini to rank candidate_actors against target_actor.
@@ -69,13 +77,7 @@ Rank by score descending. Return top {top_n} candidates only. Return ONLY the JS
         response = model.generate_content(prompt)
         raw = response.text.strip()
 
-        # Strip markdown code blocks if present
-        if raw.startswith("```"):
-            raw = raw.split("```")[1]
-            if raw.startswith("json"):
-                raw = raw[4:]
-        raw = raw.strip()
-
+        raw = _clean_json(raw)
         results = json.loads(raw)
         return results[:top_n]
 
@@ -150,3 +152,88 @@ Then add one paragraph on overall ecosystem health and diversity."""
         return response.text.strip()
     except Exception as e:
         return f"Unable to generate suggestions: {e}"
+
+
+def predict_linkage_success(actor_a: dict, actor_b: dict, similar_engagements: list) -> dict:
+    """
+    Predict success probability of a potential linkage using historical engagement data.
+    This is the flywheel — past outcomes inform future predictions.
+    Returns: {probability, confidence, risk_factors, recommendations, summary}
+    """
+    if similar_engagements:
+        history_text = "\n".join([
+            f"- {e['actor_a_name']} ↔ {e['actor_b_name']}: outcome={e['outcome']}, rating={e['rating']}/5"
+            for e in similar_engagements[:10]
+        ])
+    else:
+        history_text = "No similar engagements on record — prediction based on profile compatibility only."
+
+    prompt = f"""You are a data-driven ecosystem analyst predicting whether a new relationship will succeed.
+
+ACTOR A:
+{_build_actor_summary(actor_a)}
+
+ACTOR B:
+{_build_actor_summary(actor_b)}
+
+SIMILAR HISTORICAL ENGAGEMENTS IN THIS ECOSYSTEM:
+{history_text}
+
+Return ONLY a valid JSON object:
+{{
+  "probability": <float 0.0-1.0>,
+  "confidence": "<high|medium|low>",
+  "risk_factors": ["<risk 1>", "<risk 2>"],
+  "recommendations": ["<action 1>", "<action 2>"],
+  "summary": "<one sentence prediction>"
+}}"""
+
+    try:
+        response = model.generate_content(prompt)
+        raw = _clean_json(response.text.strip())
+        return json.loads(raw)
+    except Exception as e:
+        return {"error": str(e), "probability": 0.5, "confidence": "low", "summary": "Prediction unavailable."}
+
+
+def analyze_ecosystem_health(actors: list, linkages: list, engagements: list) -> dict:
+    """
+    Holistic health analysis of the entire ecosystem.
+    Returns: {health_score, status, strengths, gaps, top_recommendation, alert}
+    """
+    if not actors:
+        return {"error": "No actors to analyze"}
+
+    mentor_count = sum(1 for a in actors if a["type"] == "mentor")
+    company_count = sum(1 for a in actors if a["type"] == "company")
+    partner_count = sum(1 for a in actors if a["type"] == "partner")
+    active_linkages = sum(1 for l in linkages if l.get("status") == "active")
+    avg_rating = round(sum(e.get("rating", 0) for e in engagements) / len(engagements), 1) if engagements else 0
+    industries = list(set(a.get("industry", "") for a in actors if a.get("industry")))[:8]
+    locations = list(set(a.get("location", "") for a in actors if a.get("location")))[:8]
+
+    prompt = f"""You are an ecosystem health analyst for an innovation programme.
+
+ECOSYSTEM SNAPSHOT:
+- Actors: {len(actors)} total ({mentor_count} mentors, {company_count} companies, {partner_count} partners)
+- Linkages: {len(linkages)} total, {active_linkages} active
+- Engagements: {len(engagements)} recorded, avg rating {avg_rating}/5
+- Industries: {', '.join(industries) if industries else 'N/A'}
+- Locations: {', '.join(locations) if locations else 'N/A'}
+
+Return ONLY a valid JSON object:
+{{
+  "health_score": <integer 0-100>,
+  "status": "<Healthy|Growing|At Risk|Critical>",
+  "strengths": ["<strength 1>", "<strength 2>"],
+  "gaps": ["<gap 1>", "<gap 2>"],
+  "top_recommendation": "<single most impactful next action>",
+  "alert": "<urgent issue or null>"
+}}"""
+
+    try:
+        response = model.generate_content(prompt)
+        raw = _clean_json(response.text.strip())
+        return json.loads(raw)
+    except Exception as e:
+        return {"error": str(e)}
