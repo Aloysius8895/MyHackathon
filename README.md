@@ -1,60 +1,16 @@
-# MyHackathon
+# React + Vite
 
-> One-line tagline describing what your project does.
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-## Problem Statement
+Currently, two official plugins are available:
 
-Describe the problem you are solving and why it matters. What pain point does this project address?
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## Solution
+## React Compiler
 
-Explain your solution at a high level. What does the project do, and how does it solve the problem?
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Features
+## Expanding the ESLint configuration
 
-- Feature one
-- Feature two
-- Feature three
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | <!-- e.g. React, Next.js, plain HTML/CSS --> |
-| Backend | <!-- e.g. Python/Flask, Node/Express --> |
-| Database | <!-- e.g. PostgreSQL, Firebase, SQLite --> |
-| Hosting | <!-- e.g. Vercel, Railway, Render --> |
-
-## Getting Started
-
-### Prerequisites
-
-- <!-- e.g. Node.js >= 18, Python >= 3.11 -->
-
-### Installation
-
-```bash
-git clone https://github.com/Aloysius8895/MyHackathon.git
-cd MyHackathon
-# install dependencies
-```
-
-### Running Locally
-
-```bash
-# start the app
-```
-
-## Demo
-
-<!-- Add a screenshot, GIF, or link to a live demo here -->
-
-## Team
-
-| Name | Role |
-|------|------|
-| <!-- Name --> | <!-- e.g. Frontend, Backend, Design --> |
-
-## License
-
-This project is licensed under the MIT License.
+If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
