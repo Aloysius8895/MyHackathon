@@ -1,0 +1,1 @@
+Health Track AI is a medical software company developing wearable device integration and data analytics for hospitals. Our application tracks patient vitals, leverages neural networks to predict anomalies, and assists healthcare providers with remote patient monitoring and digitized diagnostics.

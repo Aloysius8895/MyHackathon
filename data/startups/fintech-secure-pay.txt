@@ -1,0 +1,1 @@
+FinTech Secure Pay is a next-generation financial technology platform specializing in decentralized banking, fraud detection, and blockchain ledger security. We build encrypted micro-transaction infrastructure and real-time payment APIs for global e-commerce systems looking to minimize transactional risk.
