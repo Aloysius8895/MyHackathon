@@ -1,0 +1,1 @@
+Edu Learn Platform is an interactive educational portal designed for universities and schools. We focus on student portals, automated assignment grading software, adaptive learning algorithms that change pace based on student performance, and virtual classroom tools.

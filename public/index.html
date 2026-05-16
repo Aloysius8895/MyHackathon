@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Hackathon Matchmaker Dashboard</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; margin: 0; padding: 40px; color: #333; }
+        .container { max-width: 750px; margin: 0 auto; background: white; padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        h1 { color: #1a73e8; margin-top: 0; font-size: 28px; }
+        p { color: #666; font-size: 15px; line-height: 1.5; }
+        .control-group { margin-bottom: 15px; }
+        label { font-weight: bold; color: #1e293b; display: block; margin-bottom: 5px; }
+        select { width: 100%; padding: 10px; border: 2px solid #cbd5e1; border-radius: 8px; font-size: 16px; background: white; outline: none; }
+        select:focus { border-color: #1a73e8; }
+        textarea { width: 100%; height: 90px; padding: 14px; border: 2px solid #cbd5e1; border-radius: 10px; font-size: 16px; box-sizing: border-box; resize: none; outline: none; transition: 0.2s; }
+        textarea:focus { border-color: #1a73e8; box-shadow: 0 0 0 3px rgba(26,115,232,0.15); }
+        button { background: #1a73e8; color: white; border: none; padding: 14px 28px; font-size: 16px; border-radius: 10px; cursor: pointer; margin-top: 15px; font-weight: bold; width: 100%; transition: 0.2s; }
+        button:hover { background: #1557b0; }
+        .card { border-left: 6px solid #1a73e8; background: #f8fafc; padding: 20px; margin-top: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); animation: fadeIn 0.4s ease-in-out; }
+        .score { font-weight: bold; color: #16a34a; float: right; background: #dcfce7; padding: 4px 10px; border-radius: 20px; font-size: 14px; }
+        .name { font-size: 19px; font-weight: bold; text-transform: capitalize; margin-bottom: 6px; color: #1e293b; }
+        #statusMessage { color: #2563eb; font-weight: 500; margin-top: 15px; display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🔍 Semantic Matchmaker Dashboard</h1>
+        <p>Select your target catalog and type out your requirements to calculate the closest matching vector alignments:</p>
+        
+        <div class="control-group">
+            <label for="collectionSelect">Target Database:</label>
+            <select id="collectionSelect">
+                <option value="startups">🚀 Search Registered Startups</option>
+                <option value="mentors">👥 Search Available Mentors</option>
+            </select>
+        </div>
+
+        <textarea id="queryInput" placeholder="e.g., Looking for technical infrastructure expertise, software design, or web setups..."></textarea>
+        <button onclick="runWebSearch()">Calculate Best Fits</button>
+        
+        <div id="statusMessage"></div>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function runWebSearch() {
+            const query = document.getElementById('queryInput').value.trim();
+            const targetCollection = document.getElementById('collectionSelect').value;
+            const resultsDiv = document.getElementById('results');
+            const statusMsg = document.getElementById('statusMessage');
+
+            if (!query) { alert("Please type something before matching!"); return; }
+            
+            resultsDiv.innerHTML = "";
+            statusMsg.innerText = `⏳ Generating embeddings and scanning the '${targetCollection}' matrix...`;
+            statusMsg.style.display = "block";
+
+            try {
+                // Pass BOTH the user's query text AND the targeted collection selection to the backend
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query, collection: targetCollection })
+                });
+                
+                const data = await response.json();
+                statusMsg.style.display = "none";
+
+                if (data.error) {
+                    resultsDiv.innerHTML = `<p style="color:#ef4444; font-weight:bold;">❌ Error: ${data.error}</p>`;
+                    return;
+                }
+
+                if (data.length === 0) {
+                    resultsDiv.innerHTML = `<p>⚠️ No match records found inside this collection space. Ensure you ran your ingestion script!</p>`;
+                    return;
+                }
+                
+                data.forEach((match, idx) => {
+                    resultsDiv.innerHTML += `
+                        <div class="card">
+                            <span class="score">#${idx + 1} Match: ${(match.similarity * 100).toFixed(2)}%</span>
+                            <div class="name">${match.name}</div>
+                            <p style="margin: 8px 0 0 0; color:#475569;">${match.content}</p>
+                        </div>`;
+                });
+
+            } catch (err) {
+                statusMsg.style.display = "none";
+                resultsDiv.innerHTML = `<p style="color:#ef4444; font-weight:bold;">❌ Network Error connecting to server backend.</p>`;
+            }
+        }
+    </script>
+
+    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #cbd5e1;">
+<h2>🤖 Automated Network Matchmaker</h2>
+<p>Click below to run a global batch matrix computation to instantly pair every single startup with their optimal mentor resource profile:</p>
+<button onclick="runAutoMatch()" style="background: #34a853;">⚡ Run Automated Pairing Matrix</button>
+<div id="autoResults"></div>
+
+<script>
+async function runAutoMatch() {
+    const autoDiv = document.getElementById('autoResults');
+    autoDiv.innerHTML = "<p>🔄 Computing vector cross-reference matrix across all cloud documents...</p>";
+    
+    const response = await fetch('/api/cross-match', { method: 'POST' });
+    const data = await response.json();
+    
+    autoDiv.innerHTML = "";
+    data.forEach(pair => {
+        autoDiv.innerHTML += `
+            <div class="card" style="border-left-color: #34a853;">
+                <span class="score" style="background:#dcfce7; color:#16a34a;">${pair.matchPercentage}% Alignment</span>
+                <div class="name">🚀 Startup: ${pair.startupName}</div>
+                <p style="margin: 5px 0 0 0; color: #475569;"><strong>Recommended Advisor:</strong> 👤 ${pair.bestMentor}</p>
+            </div>`;
+    });
+}
+</script>
+</body>
+</html>
