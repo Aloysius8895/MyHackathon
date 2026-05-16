@@ -1,0 +1,11 @@
+[project]
+name = "policy-db-mcp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "chromadb>=1.0.13",
+    "fastmcp>=2.8.1",
+    "google-genai>=1.21.1",
+]

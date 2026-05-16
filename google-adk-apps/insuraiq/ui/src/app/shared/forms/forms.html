@@ -1,0 +1,57 @@
+<div *ngIf="formSchema">
+  <h4>{{ formSchema.title }}</h4>
+  <p class="text-muted">{{ formSchema.description }}</p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div *ngFor="let key of fieldKeys" class="mb-3">
+      <label class="form-label">{{ formSchema.properties[key].title }}</label>
+
+      <select
+        *ngIf="formSchema.properties[key].enum"
+        class="form-select"
+        [formControlName]="key"
+      >
+        <option value="">Select</option>
+        <option
+          *ngFor="let option of formSchema.properties[key].enum"
+          [value]="option"
+        >
+          {{ option }}
+        </option>
+      </select>
+      <input
+        *ngIf="formSchema.properties[key].format === 'date'"
+        type="date"
+        class="form-control"
+        [formControlName]="key"
+      />
+      <input
+        *ngIf="formSchema.properties[key].type === 'number'"
+        type="number"
+        class="form-control"
+        [formControlName]="key"
+      />
+      <input
+        *ngIf="!formSchema.properties[key].enum && !formSchema.properties[key].format && formSchema.properties[key].type === 'string'"
+        type="text"
+        class="form-control"
+        [formControlName]="key"
+      />
+      <div
+        *ngIf="form.get(key)?.invalid && form.get(key)?.touched"
+        class="text-danger small mt-1"
+      >
+        This field is required.
+      </div>
+    </div>
+
+    <button
+      class="btn"
+      type="submit"
+      [disabled]="form.invalid || submitted"
+      style="background-color: var(--brand-color); color: #fff"
+    >
+      {{ submitted ? 'Submitted' : 'Submit' }}
+    </button>
+  </form>
+</div>

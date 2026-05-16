@@ -1,0 +1,322 @@
+sources:
+  tickets-db:
+    kind: "postgres"
+    host: "<DB_HOST>"           
+    port: <DB_PORT>             
+    database: "<DB_NAME>"       
+    user: "<DB_USER>"           
+    password: "<DB_PASSWORD>"   
+
+tools:
+  # Get all tickets with basic info
+  get-all-tickets:
+    kind: postgres-sql
+    source: tickets-db
+    description: Retrieve all tickets with their basic information including ID, title, status, priority, and reporter details.
+    statement: |
+      SELECT ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at, updated_at 
+      FROM tickets 
+      ORDER BY created_at DESC;
+
+  # Get ticket by ID
+  get-ticket-by-id:
+    kind: postgres-sql
+    source: tickets-db
+    description: Retrieve a specific ticket by its ID with all details.
+    parameters:
+      - name: ticket_id
+        type: integer
+        description: The unique ID of the ticket to retrieve.
+    statement: |
+      SELECT ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at, updated_at 
+      FROM tickets 
+      WHERE ticket_id = $1;
+
+  # Get tickets by status
+  get-tickets-by-status:
+    kind: postgres-sql
+    source: tickets-db
+    description: Retrieve all tickets with a specific status (open, in progress, resolved, closed).
+    parameters:
+      - name: status
+        type: string
+        description: The status to filter tickets by (e.g., 'open', 'in progress', 'resolved', 'closed').
+    statement: |
+      SELECT ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at, updated_at 
+      FROM tickets 
+      WHERE LOWER(status) = LOWER($1) 
+      ORDER BY created_at DESC;
+
+  # Get tickets by priority
+  get-tickets-by-priority:
+    kind: postgres-sql
+    source: tickets-db
+    description: Retrieve all tickets with a specific priority level (low, medium, high, critical).
+    parameters:
+      - name: priority
+        type: string
+        description: The priority level to filter tickets by (e.g., 'low', 'medium', 'high', 'critical').
+    statement: |
+      SELECT ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at, updated_at 
+      FROM tickets 
+      WHERE LOWER(priority) = LOWER($1) 
+      ORDER BY created_at DESC;
+
+  # Get tickets by reporter name
+  get-tickets-by-reporter:
+    kind: postgres-sql
+    source: tickets-db
+    description: Retrieve all tickets reported by a specific person using their name.
+    parameters:
+      - name: reporter_name
+        type: string
+        description: The name of the person who reported the tickets.
+    statement: |
+      SELECT ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at, updated_at 
+      FROM tickets 
+      WHERE LOWER(reporter_name) LIKE LOWER('%' || $1 || '%') 
+      ORDER BY created_at DESC;
+
+  # Get tickets by reporter email
+  get-tickets-by-email:
+    kind: postgres-sql
+    source: tickets-db
+    description: Retrieve all tickets reported by a specific person using their email address.
+    parameters:
+      - name: reporter_email
+        type: string
+        description: The email address of the person who reported the tickets.
+    statement: |
+      SELECT ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at, updated_at 
+      FROM tickets 
+      WHERE LOWER(reporter_email) = LOWER($1) 
+      ORDER BY created_at DESC;
+
+  # Search tickets by title or description
+  search-tickets:
+    kind: postgres-sql
+    source: tickets-db
+    description: Search tickets by keywords in title or description using partial text matching.
+    parameters:
+      - name: search_term
+        type: string
+        description: The search term to look for in ticket titles and descriptions.
+    statement: |
+      SELECT ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at, updated_at 
+      FROM tickets 
+      WHERE LOWER(title) LIKE LOWER('%' || $1 || '%') 
+         OR LOWER(description) LIKE LOWER('%' || $1 || '%') 
+      ORDER BY created_at DESC;
+
+  # Get tickets summary/statistics
+  get-tickets-summary:
+    kind: postgres-sql
+    source: tickets-db
+    description: Get summary statistics of all tickets including counts by status and priority.
+    statement: |
+      SELECT 
+        COUNT(*) as total_tickets,
+        COUNT(CASE WHEN status = 'open' THEN 1 END) as open_tickets,
+        COUNT(CASE WHEN status = 'in progress' THEN 1 END) as in_progress_tickets,
+        COUNT(CASE WHEN status = 'resolved' THEN 1 END) as resolved_tickets,
+        COUNT(CASE WHEN status = 'closed' THEN 1 END) as closed_tickets,
+        COUNT(CASE WHEN priority = 'low' THEN 1 END) as low_priority,
+        COUNT(CASE WHEN priority = 'medium' THEN 1 END) as medium_priority,
+        COUNT(CASE WHEN priority = 'high' THEN 1 END) as high_priority,
+        COUNT(CASE WHEN priority = 'critical' THEN 1 END) as critical_priority
+      FROM tickets;
+
+  # Get tickets by status and priority combination
+  get-tickets-by-status-priority:
+    kind: postgres-sql
+    source: tickets-db
+    description: Retrieve tickets filtered by both status and priority for more specific queries.
+    parameters:
+      - name: status
+        type: string
+        description: The status to filter by (e.g., 'open', 'in progress', 'resolved', 'closed').
+      - name: priority
+        type: string
+        description: The priority to filter by (e.g., 'low', 'medium', 'high', 'critical').
+    statement: |
+      SELECT ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at, updated_at 
+      FROM tickets 
+      WHERE LOWER(status) = LOWER($1) AND LOWER(priority) = LOWER($2) 
+      ORDER BY created_at DESC;
+
+  # Get recent tickets (last N days)
+  get-recent-tickets:
+    kind: postgres-sql
+    source: tickets-db
+    description: Retrieve tickets created within the last specified number of days.
+    parameters:
+      - name: days
+        type: integer
+        description: Number of days to look back for recent tickets.
+    statement: |
+      SELECT ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at, updated_at 
+      FROM tickets 
+      WHERE created_at >= CURRENT_DATE - INTERVAL '%s days' 
+      ORDER BY created_at DESC;
+
+  # Get tickets grouped by reporter
+  get-tickets-by-reporter-summary:
+    kind: postgres-sql
+    source: tickets-db
+    description: Get a summary of ticket counts grouped by reporter name and email.
+    statement: |
+      SELECT 
+        reporter_name, 
+        reporter_email, 
+        COUNT(*) as total_tickets,
+        COUNT(CASE WHEN status = 'open' THEN 1 END) as open_tickets,
+        COUNT(CASE WHEN status = 'in progress' THEN 1 END) as in_progress_tickets,
+        COUNT(CASE WHEN status = 'resolved' THEN 1 END) as resolved_tickets
+      FROM tickets 
+      GROUP BY reporter_name, reporter_email 
+      ORDER BY total_tickets DESC;
+
+  # Update ticket status
+  update-ticket-status:
+    kind: postgres-sql
+    source: tickets-db
+    description: Update the status of a specific ticket by its ID.
+    parameters:
+      - name: ticket_id
+        type: integer
+        description: The ID of the ticket to update.
+      - name: new_status
+        type: string
+        description: The new status for the ticket (e.g., 'open', 'in progress', 'resolved', 'closed').
+    statement: |
+      UPDATE tickets 
+      SET status = $2, updated_at = CURRENT_TIMESTAMP 
+      WHERE ticket_id = $1 
+      RETURNING ticket_id, title, status, updated_at;
+
+  # Update ticket priority
+  update-ticket-priority:
+    kind: postgres-sql
+    source: tickets-db
+    description: Update the priority of a specific ticket by its ID.
+    parameters:
+      - name: ticket_id
+        type: integer
+        description: The ID of the ticket to update.
+      - name: new_priority
+        type: string
+        description: The new priority for the ticket (e.g., 'low', 'medium', 'high', 'critical').
+    statement: |
+      UPDATE tickets 
+      SET priority = $2, updated_at = CURRENT_TIMESTAMP 
+      WHERE ticket_id = $1 
+      RETURNING ticket_id, title, priority, updated_at;
+
+  # Create new ticket
+  create-ticket:
+    kind: postgres-sql
+    source: tickets-db
+    description: Create a new ticket with title, description, priority, reporter name and email.
+    parameters:
+      - name: title
+        type: string
+        description: The title/subject of the new ticket.
+      - name: description
+        type: string
+        description: Detailed description of the issue or request.
+      - name: priority
+        type: string
+        description: Priority level for the ticket (low, medium, high, critical). Defaults to medium if not specified.
+      - name: reporter_name
+        type: string
+        description: Name of the person reporting the ticket.
+      - name: reporter_email
+        type: string
+        description: Email address of the person reporting the ticket.
+    statement: |
+      INSERT INTO tickets (title, description, priority, reporter_name, reporter_email) 
+      VALUES ($1, $2, COALESCE($3, 'medium'), $4, $5) 
+      RETURNING ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at;
+
+  # Get high priority open tickets
+  get-urgent-tickets:
+    kind: postgres-sql
+    source: tickets-db
+    description: Retrieve all open tickets with high or critical priority that need immediate attention.
+    statement: |
+      SELECT ticket_id, title, description, status, priority, reporter_name, reporter_email, created_at, updated_at 
+      FROM tickets 
+      WHERE status IN ('open', 'in progress') 
+        AND priority IN ('high', 'critical') 
+      ORDER BY 
+        CASE priority 
+          WHEN 'critical' THEN 1 
+          WHEN 'high' THEN 2 
+        END, 
+        created_at ASC;
+
+# Toolsets - Group tools for different agent roles and use cases
+toolsets:
+  # Read-only operations for query and analysis agents
+  tickets-read-only:
+    - get-all-tickets
+    - get-ticket-by-id
+    - get-tickets-by-status
+    - get-tickets-by-priority
+    - get-tickets-by-reporter
+    - get-tickets-by-email
+    - search-tickets
+    - get-tickets-summary
+    - get-tickets-by-status-priority
+    - get-recent-tickets
+    - get-tickets-by-reporter-summary
+    - get-urgent-tickets
+
+  # Write operations for management and admin agents
+  tickets-write-ops:
+    - create-ticket
+    - update-ticket-status
+    - update-ticket-priority
+
+  # Complete access for supervisor agents
+  tickets-full-access:
+    - get-all-tickets
+    - get-ticket-by-id
+    - get-tickets-by-status
+    - get-tickets-by-priority
+    - get-tickets-by-reporter
+    - get-tickets-by-email
+    - search-tickets
+    - get-tickets-summary
+    - get-tickets-by-status-priority
+    - get-recent-tickets
+    - get-tickets-by-reporter-summary
+    - get-urgent-tickets
+    - create-ticket
+    - update-ticket-status
+    - update-ticket-priority
+
+  # Analyst toolset for reporting and analytics
+  tickets-analytics:
+    - get-tickets-summary
+    - get-tickets-by-reporter-summary
+    - get-recent-tickets
+    - get-tickets-by-status-priority
+    - get-urgent-tickets
+
+  # Support agent toolset for day-to-day operations
+  tickets-support:
+    - get-all-tickets
+    - get-ticket-by-id
+    - search-tickets
+    - get-tickets-by-status
+    - get-tickets-by-priority
+    - update-ticket-status
+    - update-ticket-priority
+
+  # Basic user toolset for self-service
+  tickets-basic:
+    - get-tickets-by-email
+    - get-tickets-by-reporter
+    - search-tickets
+    - create-ticket

@@ -1,0 +1,164 @@
+{
+  "type": "object",
+  "title": "Health Insurance Application Form",
+  "description": "Important: Please answer all questions completely and accurately as these statements form the basis of the insurance contract. Non-disclosure or misrepresentation may lead to cancellation of the policy.",
+  "properties": {
+    "full_name": {
+      "title": "Full Name",
+      "type": "string"
+    },
+    "dob": {
+      "title": "Date of Birth",
+      "type": "string",
+      "format": "date"
+    },
+    "permanent_address": {
+      "title": "Permanent Address",
+      "type": "string"
+    },
+    "city": {
+      "title": "City",
+      "type": "string"
+    },
+    "state": {
+      "title": "State",
+      "type": "string"
+    },
+    "zip_code": {
+      "title": "ZIP Code",
+      "type": "string"
+    },
+    "gender": {
+      "title": "Gender",
+      "type": "string",
+      "enum": [
+        "Female",
+        "Male",
+        "Transgender",
+        "Non Binary"
+      ]
+    },
+    "full_name_ins": {
+      "title": "Insured Person's Full Name",
+      "type": "string",
+      "description": "Fill for all members. Type NA if not applicable."
+    },
+    "relationship_ins": {
+      "title": "Relationship with Proposer",
+      "type": "string"
+    },
+    "gender_ins": {
+      "title": "Insured Person's Gender",
+      "type": "string"
+    },
+    "dob_ins": {
+      "title": "Insured Person's Date of Birth (DD/MM/YYYY)",
+      "type": "string"
+    },
+    "age_ins": {
+      "title": "Insured Person's Age",
+      "type": "number"
+    },
+    "height_ins": {
+      "title": "Height (cm)",
+      "type": "number"
+    },
+    "weight_ins": {
+      "title": "Weight (kgs)",
+      "type": "number"
+    },
+    "bmi_ins": {
+      "title": "BMI",
+      "type": "number"
+    },
+    "smoker_ins": {
+      "title": "Do you or any member smoke or consume tobacco?",
+      "type": "string"
+    },
+    "alcoholic_ins": {
+      "title": "Do you or any member consume alcoholic beverages?",
+      "type": "string"
+    },
+    "heart_ailment_ins": {
+      "title": "Suffer from High BP, Heart Attack, or other heart ailment?",
+      "type": "string"
+    },
+    "hormonal_ailments_ins": {
+      "title": "Suffer from Diabetes, Thyroid, or other hormonal disorder?",
+      "type": "string"
+    },
+    "neurological_ailments_ins": {
+      "title": "Suffer from Stroke, Epilepsy, or other neurological disorder?",
+      "type": "string"
+    },
+    "respiratory_ailments_ins": {
+      "title": "Suffer from Asthma, TB, or other respiratory disorder?",
+      "type": "string"
+    },
+    "liver_ailments_ins": {
+      "title": "Suffer from Ulcer, Hepatitis, or other gastrointestinal/liver disorder?",
+      "type": "string"
+    },
+    "cancer_ins": {
+      "title": "Suffer from Cancer, Tumor, or any form of growth?",
+      "type": "string"
+    },
+    "bone_ailments_ins": {
+      "title": "Suffer from Arthritis, Gout, or other joint/bone/spine disorder?",
+      "type": "string"
+    },
+    "eye_ailments_ins": {
+      "title": "Suffer from Cataract, Glaucoma, or other eye disorder?",
+      "type": "string"
+    },
+    "sexual_ailments_ins": {
+      "title": "Suffer from HIV / AIDS or other STD?",
+      "type": "string"
+    },
+    "pcod_ailments_ins": {
+      "title": "For Female Members: Pregnant or suffering from any disorder of breast or reproductive organs?",
+      "type": "string"
+    },
+    "recent_surgery_ins": {
+      "title": "Any surgery, hospitalization, or accident in the last 5 years?",
+      "type": "string"
+    },
+    "medications_ins": {
+      "title": "Currently taking any regular medication?",
+      "type": "string"
+    }
+  },
+  "required": [
+    "full_name",
+    "dob",
+    "permanent_address",
+    "city",
+    "state",
+    "zip_code",
+    "gender",
+    "policy_type",
+    "sum_insured",
+    "full_name_ins",
+    "relationship_ins",
+    "gender_ins",
+    "dob_ins",
+    "age_ins",
+    "height_ins",
+    "weight_ins",
+    "bmi_ins",
+    "smoker_ins",
+    "alcoholic_ins",
+    "heart_ailment_ins",
+    "hormonal_ailments_ins",
+    "neurological_ailments_ins",
+    "respiratory_ailments_ins",
+    "liver_ailments_ins",
+    "cancer_ins",
+    "bone_ailments_ins",
+    "eye_ailments_ins",
+    "sexual_ailments_ins",
+    "pcod_ailments_ins",
+    "recent_surgery_ins",
+    "medications_ins"
+  ]
+}

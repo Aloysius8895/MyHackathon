@@ -1,0 +1,31 @@
+# Core Streamlit
+streamlit==1.45.1
+
+# Data processing (required for your models)
+pandas==2.3.0
+numpy==2.2.6
+
+# ML packages (your code needs these)
+xgboost==3.0.2
+scikit-learn==1.7.0
+shap==0.47.2
+
+# Google Cloud (for your model loading)
+google-cloud-bigquery==3.34.0
+google-cloud-storage==2.19.0
+google-adk==1.2.1
+google-genai==1.19.0
+google-cloud-aiplatform>=1.96.0
+vertexai
+
+# Visualization (your code generates charts)
+matplotlib==3.10.3
+seaborn==0.13.2
+
+# Utilities
+requests==2.32.3
+tabulate==0.9.0
+python-docx==1.1.2
+
+#SQL agent
+db-dtypes==1.4.3

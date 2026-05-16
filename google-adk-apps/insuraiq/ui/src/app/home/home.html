@@ -1,0 +1,73 @@
+<section>
+  <div class="row">
+    <div class="col-3"></div>
+    <div class="col-9">
+      <div class="chat-window" #chatContainer>
+        <div *ngIf="showChat">
+          <div *ngFor="let chatMessage of chatMessages">
+            <ng-container [ngSwitch]="chatMessage.owner">
+              <div *ngSwitchCase="'system_instruction'">
+                <div class="row mb-2">
+                  <div
+                    class="chat-bubble-loader"
+                    style="color: #007bff; font-size: small; font-style: italic"
+                  >
+                    {{ chatMessage.message }}
+                  </div>
+                </div>
+              </div>
+              <div *ngSwitchCase="'bot'">
+                <div class="row mb-2">
+                  <div
+                    class="card bot-card"
+                    [innerHTML]="formatResponse(chatMessage.message)"
+                  ></div>
+                </div>
+              </div>
+              <div *ngSwitchCase="'user'">
+                <div
+                  class="row mb-2"
+                  style="display: flex; justify-content: end"
+                >
+                  <div class="card user-card">{{ chatMessage.message }}</div>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+        <div class="form-div" *ngIf="showForm">
+          <app-forms
+            [formSchema]="formSchema"
+            (formSubmitted)="onFormSubmit($event)"
+          ></app-forms>
+        </div>
+        <div class="card bot-card" *ngIf="!sessionId.trim()">
+          Please wait a moment we are loading your session.
+        </div>
+        <div class="chat-bubble-loader" *ngIf="isStreaming">
+          <div class="dot"></div>
+          <div class="dot"></div>
+          <div class="dot"></div>
+        </div>
+      </div>
+      <div class="chat-input-container mt-3 d-flex align-items-center">
+        <input
+          type="text"
+          class="form-control me-2"
+          placeholder="Type your message..."
+          [(ngModel)]="userMessage"
+          (keydown.enter)="sendUserTypedMessage()"
+          [disabled]="!sessionLoaded"
+        />
+        <button
+          class="btn"
+          (click)="sendUserTypedMessage()"
+          [disabled]="!userMessage.trim() || !sessionLoaded"
+          style="background-color: var(--brand-color); color: #fff"
+        >
+          Send
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
