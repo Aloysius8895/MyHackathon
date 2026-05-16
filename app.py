@@ -3,6 +3,7 @@ import pandas as pd
 import plotly.express as px
 from database import init_db, add_actor, get_actors, get_actor, create_linkage, get_linkages, update_linkage_status, add_engagement, get_engagements, get_stats
 from gemini_engine import find_matches, explain_linkage, suggest_programme_matches, predict_linkage_success, analyze_ecosystem_health
+from skills_pack import get_skills_by_category, get_all_skills
 
 st.set_page_config(page_title="EcoLink", page_icon="🔗", layout="wide")
 init_db()
@@ -152,7 +153,15 @@ elif page == "Actors":
             actor_type = st.selectbox("Type *", ["company", "mentor", "partner"])
             industry = st.text_input("Industry / Domain")
             location = st.text_input("Location")
-            skills_input = st.text_input("Skills / Expertise (comma-separated)")
+
+            skills_by_cat = get_skills_by_category()
+            selected_category = st.selectbox("Skills Category", list(skills_by_cat.keys()))
+            skills_selected = st.multiselect(
+                "Skills / Expertise *",
+                options=skills_by_cat[selected_category],
+                help="Select from the skills pack. You can change category to add more."
+            )
+            extra_skills = st.text_input("Additional Skills (comma-separated, optional)")
             description = st.text_area("Description", height=100)
 
             submitted = st.form_submit_button("Add Actor", type="primary")
@@ -160,7 +169,8 @@ elif page == "Actors":
                 if not name:
                     st.error("Name is required.")
                 else:
-                    skills = [s.strip() for s in skills_input.split(",") if s.strip()]
+                    extra = [s.strip() for s in extra_skills.split(",") if s.strip()]
+                    skills = skills_selected + extra
                     add_actor(name, actor_type, industry, description, skills, location)
                     st.success(f"Actor '{name}' added successfully!")
                     st.rerun()
