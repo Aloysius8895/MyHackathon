@@ -1,5 +1,16 @@
+# Streamlit UI (Edixon)
 streamlit==1.45.0
 google-generativeai==0.8.3
 python-dotenv==1.0.1
 pandas
 plotly
+
+# FastAPI backend (Aloysius)
+fastapi==0.128.0
+uvicorn[standard]==0.34.0
+pydantic-settings==2.6.1
+firebase-admin==6.6.0
+google-cloud-firestore==2.20.0
+google-genai>=1.0.0
+pytest==8.3.4
+httpx==0.28.1

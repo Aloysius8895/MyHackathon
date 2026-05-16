@@ -1,11 +1,173 @@
 {
   "version": 1,
   "skills": {
+    "api-development": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "api-development/SKILL.md",
+      "computedHash": "df840f99725083c5386c515ee9f4badb085d46549a4025893c83c90a05e6f70e"
+    },
+    "backend-development": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "backend-development/SKILL.md",
+      "computedHash": "c2e5407453d49e776effa213efd9a0a7ff8e46f228e850bab1f07fd22d9f8fc0"
+    },
+    "developing-genkit-dart": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/developing-genkit-dart/SKILL.md",
+      "computedHash": "ba0025db33c95d8b66cd6de1f4c25b8b70456fb2789ec6c97cd88d432eed3fb3"
+    },
+    "developing-genkit-go": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/developing-genkit-go/SKILL.md",
+      "computedHash": "5283fdc18ac5d4c4742cbf244fba1c887e04d4027e6313441ed8ff7424a88e9c"
+    },
+    "developing-genkit-js": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/developing-genkit-js/SKILL.md",
+      "computedHash": "4d3de47b5be279ab3b0ee6055ae541f28d1cc45f8e8986c0b5df2f8d89f4ea30"
+    },
+    "developing-genkit-python": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/developing-genkit-python/SKILL.md",
+      "computedHash": "6d80e42acbaec4f53f8f62da5d61e0ae540144552fc07fc06a3605efb5420fba"
+    },
+    "docker": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "docker/SKILL.md",
+      "computedHash": "d7cde6ea1ffb9730f2864351ab3de766830f8734d631c9326b865969d5a86460"
+    },
+    "fastapi-python": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "fastapi-python/SKILL.md",
+      "computedHash": "4521c6090735152b7b8df670cefe5c1c6d1dcaa115de67bb96e74ebf802d4f24"
+    },
+    "firebase-ai-logic-basics": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-ai-logic-basics/SKILL.md",
+      "computedHash": "65aaefb79a4d018bb24b1904be4b9a460b189b78f26145741af83ad7c38f7669"
+    },
+    "firebase-app-hosting-basics": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-app-hosting-basics/SKILL.md",
+      "computedHash": "a3ba088442abf5b97281bcf3e4dd11e1f7bdefdc5bd404b4fb30f344d19742d2"
+    },
+    "firebase-auth-basics": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-auth-basics/SKILL.md",
+      "computedHash": "65e6f78dc3c9ea7896d65089899b0bd1060641b7756decd693e3179fe295456f"
+    },
+    "firebase-basics": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-basics/SKILL.md",
+      "computedHash": "871b4fff9692faa25d6c9b96b8f7c2c5ea53be778bca2b702dd82ceeb8b1b272"
+    },
+    "firebase-crashlytics": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-crashlytics/SKILL.md",
+      "computedHash": "e40f0b599853b0512d023306b23bfbcc39c911ff61d5f0f084cab2bce234480a"
+    },
+    "firebase-data-connect": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-data-connect-basics/SKILL.md",
+      "computedHash": "506bd68146e316f296df2dd02d90aa90542584b6b131f4003447d7716155dcdd"
+    },
+    "firebase-development": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "firebase-development/SKILL.md",
+      "computedHash": "1e543e6eb8aeacaa9071bafe272e5a02ccf2da4aa63e94725c72d7b33d23622c"
+    },
+    "firebase-firestore": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-firestore/SKILL.md",
+      "computedHash": "b2257a15aabfe310176f4e94ffec377b32bdc2e8465d65d219542c4c4c896a39"
+    },
+    "firebase-hosting-basics": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-hosting-basics/SKILL.md",
+      "computedHash": "0688a8ad6cb72149924352cc47e6cc8bf815e944b636a67b9da225cc9b025afc"
+    },
+    "firebase-remote-config-basics": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-remote-config-basics/SKILL.md",
+      "computedHash": "ac2bfdc0f4e2fba123e2baf22a39ff80073c9f682784a67d0ac625118bad1921"
+    },
+    "firebase-security-rules-auditor": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/firebase-security-rules-auditor/SKILL.md",
+      "computedHash": "42e793406ca8980c47fcdbd309f02838316849bcbf8475001b4ecaa6a67606b8"
+    },
+    "gcp-development": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "gcp-development/SKILL.md",
+      "computedHash": "b6cf28e3482887756f61caddf5f35535bc7098f58aeb36fb0785740560890980"
+    },
+    "machine-learning": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "machine-learning/SKILL.md",
+      "computedHash": "5683168b790d3402074da2555c27bd17dc5fde513c69c4d3a1f8ad2210fbc565"
+    },
+    "nextjs-react-typescript": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "nextjs-react-typescript/SKILL.md",
+      "computedHash": "52067402daf8388ba7970478e0ba1f350f1868a65a62ae2bf6f4dc1ac3cf3e88"
+    },
+    "python": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "python/SKILL.md",
+      "computedHash": "6acced25f7717394ae5ffd2ff1ed15dd67bed0cf81292b3446a0806493f115f6"
+    },
+    "security-best-practices": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "security-best-practices/SKILL.md",
+      "computedHash": "8298d5af2d44c61b69aee0641160f8e83f0a5e284cfc501e1f1db1838e8057d9"
+    },
+    "tailwindcss": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "tailwindcss/SKILL.md",
+      "computedHash": "1715717d38abba1c4b11f2e95a94681cdb1dddbcb28379637b591a16b50bcd4d"
+    },
+    "testing": {
+      "source": "Mindrally/skills",
+      "sourceType": "github",
+      "skillPath": "testing/SKILL.md",
+      "computedHash": "6395cff0efa48ba1abf4d58727d47997edf527ae667a541c8f83d1250493fb11"
+    },
     "web-design-guidelines": {
       "source": "vercel-labs/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/web-design-guidelines/SKILL.md",
       "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
+    },
+    "xcode-project-setup": {
+      "source": "firebase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/xcode-project-setup/SKILL.md",
+      "computedHash": "c212c4e08f0d2bbd4a2a61278a9a030e3da1227c0fe57022ed54d1c3c1a0aaf8"
     }
   }
 }
