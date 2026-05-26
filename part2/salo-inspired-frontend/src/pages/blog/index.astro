@@ -1,0 +1,56 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Header from "../../components/Header.astro";
+import Footer from "../../components/Footer.astro";
+import { mentors } from "../../data/mentors";
+---
+
+<BaseLayout title="High Relationship Mentors - LinkOS">
+  <Header />
+  <main class="page mentors-page">
+    <section class="container listing-hero">
+      <p class="eyebrow">High relationship mentors</p>
+      <div class="hero-split">
+        <h1>Mentors with reusable relationship evidence</h1>
+        <p>
+          This view replaces a normal blog index. It shows mentors with strong graph paths,
+          feedback history, and capacity-aware signals for company-to-mentor matching.
+        </p>
+      </div>
+    </section>
+
+    <section class="container mentor-grid-section" aria-label="High relationship mentor list">
+      <div class="mentor-grid">
+        {mentors.map((mentor) => (
+          <article class="mentor-card">
+            <div class="mentor-card-top">
+              <span class="mentor-avatar" aria-hidden="true">{mentor.initials}</span>
+              <div>
+                <h2>{mentor.name}</h2>
+                <p>{mentor.role}</p>
+              </div>
+              <strong class="relationship-score">{mentor.relationshipScore}</strong>
+            </div>
+
+            <div class="mentor-meta">
+              <span>{mentor.industry}</span>
+              <span>{mentor.country}</span>
+              <span>{mentor.activeRelationships}/{mentor.maxCapacity} active</span>
+            </div>
+
+            <div class="chip-row">
+              {mentor.expertise.map((skill) => <span>{skill}</span>)}
+            </div>
+
+            <ul class="evidence-list">
+              {mentor.graphEvidence.slice(0, 2).map((item) => <li>{item}</li>)}
+            </ul>
+
+            <a class="button button-secondary" href="/services/">View mentor detail →</a>
+          </article>
+        ))}
+      </div>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1086" viewBox="0 0 1440 1086">
+  <rect width="1440" height="1086" fill="#eef7f5"/>
+  <rect x="94" y="92" width="1252" height="902" rx="42" fill="#123b3a"/>
+  <rect x="164" y="166" width="1112" height="250" rx="38" fill="#e5fff7"/>
+  <text x="222" y="278" fill="#123b3a" font-family="Arial, sans-serif" font-size="72" font-weight="700">Northstar Health</text>
+  <text x="226" y="344" fill="#436160" font-family="Arial, sans-serif" font-size="32">Care plans that feel simple from day one</text>
+  <rect x="164" y="500" width="330" height="350" rx="34" fill="#f8fffd"/>
+  <rect x="554" y="500" width="330" height="350" rx="34" fill="#f8fffd"/>
+  <rect x="944" y="500" width="330" height="350" rx="34" fill="#f8fffd"/>
+  <circle cx="329" cy="610" r="68" fill="#61fdfc"/>
+  <path d="M289 610h80M329 570v80" stroke="#123b3a" stroke-width="18" stroke-linecap="round"/>
+  <rect x="612" y="592" width="214" height="30" rx="15" fill="#123b3a"/>
+  <rect x="612" y="660" width="152" height="24" rx="12" fill="#9e36ff"/>
+  <path d="M1030 670l62 62 116-154" fill="none" stroke="#b9ff36" stroke-width="18" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

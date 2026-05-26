@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="750" height="1629" viewBox="0 0 750 1629">
+  <rect width="750" height="1629" fill="#082b35"/>
+  <rect x="50" y="68" width="650" height="1490" rx="70" fill="#172126"/>
+  <rect x="50" y="68" width="650" height="570" rx="70" fill="#88d7f0"/>
+  <path d="M50 526c130-58 216 44 346-10s216-44 304 14v108H50z" fill="#073846"/>
+  <path d="M214 460l140-76 174 76-174 80z" fill="#fff"/>
+  <path d="M354 384v-96l116 172z" fill="#ffcd29"/>
+  <text x="100" y="780" fill="#fff" font-family="Arial, sans-serif" font-size="64" font-weight="700">Tide</text>
+  <text x="100" y="852" fill="#fff" font-family="Arial, sans-serif" font-size="64" font-weight="700">Charter</text>
+  <rect x="100" y="944" width="550" height="170" rx="30" fill="#22343b"/>
+  <path d="M150 1016c58 44 128 44 186 0M150 1064c58 44 128 44 186 0" stroke="#ffcd29" stroke-width="16" stroke-linecap="round"/>
+  <rect x="100" y="1184" width="276" height="86" rx="10" fill="#ffcd29"/>
+  <text x="150" y="1240" fill="#101010" font-family="Arial, sans-serif" font-size="32" font-weight="700">Enquire</text>
+</svg>

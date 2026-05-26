@@ -1,0 +1,60 @@
+---
+const pathname = Astro.url.pathname;
+const navItems = [
+  { href: "/projects/", label: "Work" },
+  { href: "/blog/", label: "Blog" },
+  { href: "/about/", label: "About" },
+  { href: "/services/", label: "Services" },
+].map((item) => ({ ...item, active: pathname.startsWith(item.href) }));
+---
+
+<header class="site-header" data-site-header>
+  <div class="container header-inner">
+    <a class="brand" href="/" aria-label="LinkOS homepage">
+      <span class="brand-mark" aria-hidden="true">
+        <span></span>
+        <span></span>
+      </span>
+      <span class="brand-word">LinkOS</span>
+    </a>
+
+    <p class="header-line">Programmable ecosystem relationships.</p>
+
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      {navItems.map((item) => (
+        <a href={item.href} class:list={["nav-link", item.active && "is-active"]}>{item.label}</a>
+      ))}
+    </nav>
+
+    <div class="header-actions">
+      <a class="button button-secondary" href="/blog/">High-fit mentors</a>
+      <a class="button button-primary js-glow" href="/projects/">Run matching</a>
+    </div>
+
+    <button class="menu-button" type="button" data-menu-toggle aria-controls="mobile-menu" aria-expanded="false">
+      <span class="menu-icon" aria-hidden="true"></span>
+      <span class="sr-only">Toggle menu</span>
+    </button>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
+    <div class="mobile-menu-panel">
+      <div class="mobile-menu-top">
+        <span class="brand mobile-brand">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span>
+            <span></span>
+          </span>
+          <span class="brand-word">LinkOS</span>
+        </span>
+        <button class="menu-close" type="button" data-menu-close aria-label="Close menu"></button>
+      </div>
+      <nav aria-label="Mobile navigation" class="mobile-nav">
+        {navItems.map((item) => (
+          <a href={item.href}>{item.label}</a>
+        ))}
+      </nav>
+      <a class="button button-primary js-glow mobile-cta" href="/projects/">Run matching</a>
+    </div>
+  </div>
+</header>
